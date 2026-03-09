@@ -1,0 +1,14 @@
+{
+  "name": "lebedinsky-space",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "apps/api"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w apps/web",
+    "dev:api": "npm run dev -w apps/api",
+    "build:web": "npm run build -w apps/web",
+    "lint:web": "npm run lint -w apps/web"
+  }
+}

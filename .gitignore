@@ -1,0 +1,28 @@
+# Node
+node_modules
+dist
+dist-ssr
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.sw?
+
+# Go
+apps/api/bin/
+apps/api/*.exe
+
+# Env
+.env
+.env.local
+*.env.local
+
+# Go binary
+lebedinsky-api
