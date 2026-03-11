@@ -1,0 +1,31 @@
+services:
+  web:
+    image: ghcr.io/avlebedinsky/lebedinsky-space-web:latest
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.space-web.rule=Host(`lebedinsky.space`)"
+      - "traefik.http.routers.space-web.entrypoints=websecure"
+      - "traefik.http.routers.space-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.space-web.middlewares=authelia@docker"
+    networks:
+      - traefik
+
+  api:
+    image: ghcr.io/avlebedinsky/lebedinsky-space-api:latest
+    restart: unless-stopped
+    env_file: /opt/lebedinsky/.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.space-api.rule=Host(`lebedinsky.space`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.space-api.entrypoints=websecure"
+      - "traefik.http.routers.space-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.space-api.middlewares=authelia@docker,strip-api-prefix@docker"
+      - "traefik.http.middlewares.strip-api-prefix.stripprefix.prefixes=/api"
+      - "traefik.http.services.space-api.loadbalancer.server.port=8080"
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true
