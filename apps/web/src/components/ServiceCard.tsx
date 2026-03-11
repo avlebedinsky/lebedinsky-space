@@ -1,12 +1,15 @@
 import { ExternalLink } from 'lucide-react'
-import type { Service } from '../services'
+import type { Service, ServiceStatus } from '../lib/types'
+import { getIcon } from '../lib/icons'
+import { StatusDot } from './StatusDot'
 
 interface Props {
   service: Service
+  status?: ServiceStatus['status']
 }
 
-export function ServiceCard({ service }: Props) {
-  const Icon = service.icon
+export function ServiceCard({ service, status }: Props) {
+  const Icon = getIcon(service.iconName)
 
   return (
     <a
@@ -23,7 +26,10 @@ export function ServiceCard({ service }: Props) {
       </div>
 
       <div className="flex-1">
-        <h2 className="text-lg font-semibold text-white">{service.name}</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-white">{service.name}</h2>
+          {status && <StatusDot status={status} />}
+        </div>
         <p className="mt-1 text-sm text-white/50">{service.description}</p>
       </div>
 

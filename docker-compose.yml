@@ -1,0 +1,52 @@
+services:
+  web:
+    build: ./apps/web
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.space-web.rule=Host(`lebedinsky.space`)"
+      - "traefik.http.routers.space-web.entrypoints=websecure"
+      - "traefik.http.routers.space-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.space-web.middlewares=authelia@docker"
+    networks:
+      - traefik
+
+  api:
+    build: ./apps/api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: "8080"
+      ENVIRONMENT: production
+      ADMIN_GROUP: ${ADMIN_GROUP:-admin}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.space-api.rule=Host(`lebedinsky.space`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.space-api.entrypoints=websecure"
+      - "traefik.http.routers.space-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.space-api.middlewares=authelia@docker,strip-api-prefix@docker"
+      - "traefik.http.middlewares.strip-api-prefix.stripprefix.prefixes=/api"
+      - "traefik.http.services.space-api.loadbalancer.server.port=8080"
+    networks:
+      - traefik
+      - internal
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lebedinsky}
+      POSTGRES_USER: ${POSTGRES_USER:-lebedinsky}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - internal
+
+networks:
+  traefik:
+    external: true
+  internal:
+
+volumes:
+  db_data:

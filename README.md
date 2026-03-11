@@ -1,73 +1,91 @@
-# React + TypeScript + Vite
+# lebedinsky.space
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Личная стартовая страница с дашбордом сервисов, заметками и управлением через веб.
 
-Currently, two official plugins are available:
+## Стек
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+| Слой | Технология |
+|------|-----------|
+| Фронтенд | React 19 + TypeScript + Tailwind CSS v4 + Vite |
+| Бэкенд | Go (chi router) + PostgreSQL (pgx) |
+| Аутентификация | Authelia (forward auth via Traefik) |
+| Деплой | Docker Compose + Traefik |
 
-## React Compiler
+## Структура
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+lebedinsky-space/
+├── apps/
+│   ├── web/          # React SPA
+│   │   ├── src/
+│   │   │   ├── lib/          # api client, типы, иконки
+│   │   │   ├── hooks/        # useMe, useServices, useNotes, useStatus
+│   │   │   ├── components/   # ServiceCard, NotesPanel, StatusDot
+│   │   │   └── pages/        # AdminPage
+│   │   ├── Dockerfile
+│   │   └── nginx.conf
+│   └── api/          # Go API
+│       ├── internal/
+│       │   ├── handlers/     # services, notes, status, me
+│       │   ├── middleware/   # auth (Remote-User header)
+│       │   ├── models/
+│       │   ├── db/           # migrations
+│       │   └── config/
+│       ├── cmd/seed/         # утилита засева БД
+│       └── Dockerfile
+├── docker-compose.yml
+└── .env.example
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## API
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Метод | Путь | Доступ | Описание |
+|-------|------|--------|----------|
+| GET | `/me` | все | текущий пользователь |
+| GET | `/services` | все | список сервисов |
+| POST | `/services` | admin | создать сервис |
+| PUT | `/services/{id}` | admin | обновить сервис |
+| DELETE | `/services/{id}` | admin | удалить сервис |
+| GET | `/status` | все | статусы сервисов (HEAD-запросы, кэш 30 сек) |
+| GET | `/notes` | авторизован | заметки текущего пользователя |
+| POST | `/notes` | авторизован | создать заметку |
+| PUT | `/notes/{id}` | авторизован | обновить заметку |
+| DELETE | `/notes/{id}` | авторизован | удалить заметку |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Локальная разработка
+
+**Бэкенд:**
+```bash
+# Запустить Postgres
+docker run -d --name pg -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=lebedinsky -p 5432:5432 postgres:17-alpine
+
+# Запустить API
+cd apps/api
+DATABASE_URL="postgres://postgres:secret@localhost:5432/lebedinsky" \
+  PORT=8080 ENVIRONMENT=development ADMIN_GROUP=admins \
+  go run .
 ```
+
+**Фронтенд:**
+```bash
+cd apps/web
+npm install
+npm run dev   # http://localhost:5173
+              # /api проксируется на :8080
+```
+
+Dev-аутентификация: API принимает заголовок `X-Dev-User: username` вместо `Remote-User`.
+
+## Деплой
+
+Предполагает Traefik с Authelia как middleware `authelia@docker` и внешнюю сеть `traefik`.
+
+```bash
+cp .env.example .env
+# Заполнить DATABASE_URL, POSTGRES_PASSWORD, ADMIN_GROUP
+docker compose up -d --build
+```
+
+Traefik автоматически получает SSL-сертификат и проксирует:
+- `lebedinsky.space` → контейнер `web` (nginx + React SPA)
+- `lebedinsky.space/api/*` → контейнер `api` (Go, `/api` prefix стрипается)
