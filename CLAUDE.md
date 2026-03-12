@@ -4,11 +4,21 @@
 
 Личная стартовая страница: дашборд сервисов + заметки. Монорепо с Go API и React SPA.
 
+## Стек
+
+- **Frontend:** React 19, React Router 7, Tailwind CSS v4, Vite 7, TypeScript 5 (strict)
+- **Backend:** Go 1.26, chi v5, pgx v5 (raw SQL, без ORM)
+- **DB:** PostgreSQL 17
+- **Deploy:** Docker Compose + Traefik + Authelia
+
 ## Структура монорепо
 
 ```
-apps/web/   — React SPA (единственный источник правды для фронтенда)
-apps/api/   — Go API
+apps/web/        — React SPA
+apps/api/        — Go API
+  cmd/seed/      — утилита для начального заполнения БД
+deploy/          — docker-compose.yml для prod (GHCR-образы)
+docker-compose.yml — dev compose (локальная сборка + DB)
 ```
 
 Вся конфигурация фронтенда живёт в `apps/web/`. В корне репозитория её нет.
@@ -16,8 +26,13 @@ apps/api/   — Go API
 ## Dev-команды
 
 ```bash
-# Фронтенд (http://localhost:5173, /api проксируется на :8080)
+# Фронтенд (http://localhost:5173, /api → :8080)
 cd apps/web && npm run dev
+
+# Или из корня монорепо
+npm run dev:web
+npm run build:web
+npm run lint:web
 
 # Бэкенд
 cd apps/api
@@ -25,25 +40,39 @@ DATABASE_URL="postgres://postgres:secret@localhost:5432/lebedinsky" \
   PORT=8080 ENVIRONMENT=development ADMIN_GROUP=admins \
   go run .
 
-# Тесты бэкенда (нужен реальный Postgres, не мок)
+# Тесты бэкенда (нужен Docker — testcontainers поднимает реальный Postgres)
 cd apps/api && go test ./...
 
 # TypeScript-проверка фронтенда
 cd apps/web && npx tsc --noEmit
+
+# Засеять БД тестовыми данными
+cd apps/api && go run ./cmd/seed
 ```
 
 ## Аутентификация
 
-- В prod: Traefik + Authelia инжектируют заголовок `Remote-User` (и `Remote-Groups` для admin)
-- В dev: API принимает `X-Dev-User: username` как fallback
-- Группа для admin задаётся переменной `ADMIN_GROUP` (по умолчанию `admins`)
+- **prod:** Traefik + Authelia инжектируют `Remote-User` и `Remote-Groups`
+- **dev:** API принимает `X-Dev-User: username` как fallback
+- **dev-frontend:** Vite автоматически инжектирует `X-Dev-User: avleb` и `Remote-Groups: admin` в проксируемые запросы (настроено в `vite.config.ts`)
+- `ADMIN_GROUP` задаёт имя группы для admin (по умолчанию `admins`)
+
+## API endpoints
+
+| Метод | Путь | Доступ | Описание |
+|-------|------|--------|----------|
+| GET | `/me` | все | текущий пользователь |
+| GET | `/services` | все | список сервисов |
+| POST/PUT/DELETE | `/services[/{id}]` | admin | управление сервисами |
+| GET | `/status` | все | статусы сервисов (кэш 30с) |
+| GET/POST/PUT/DELETE | `/notes[/{id}]` | auth | заметки (scope по username) |
 
 ## Ключевые архитектурные решения
 
-- **Нет mock-базы в тестах** — тесты бэкенда работают с реальным Postgres через testcontainers/pgx
+- **Нет mock-базы в тестах** — тесты работают с реальным Postgres через testcontainers
 - **Статусы сервисов** — HEAD-запросы к URL, кэш 30 сек, конкурентно через goroutines
-- **Иконки** — строковое имя `iconName` хранится в БД, маппится в LucideIcon через `src/lib/icons.ts`
-- **Заметки** — скоупятся по `username` из заголовка, admin видит только свои заметки
+- **Иконки** — строковое `iconName` хранится в БД, маппится в LucideIcon через `src/lib/icons.ts`
+- **Заметки** — скоупятся по `username`, admin видит только свои
 
 ## Деплой
 
@@ -54,6 +83,8 @@ Traefik (внешняя сеть `traefik`) + Authelia middleware `authelia@dock
 cp .env.example .env   # заполнить DATABASE_URL, POSTGRES_PASSWORD, ADMIN_GROUP
 docker compose up -d --build
 ```
+
+CI/CD: GitHub Actions собирает образы → GHCR → SSH деплой на сервер через `deploy/docker-compose.yml`.
 
 ## Что НЕ нужно делать
 
