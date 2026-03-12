@@ -13,15 +13,6 @@ type Service struct {
 	CreatedAt   time.Time `json:"createdAt"`
 }
 
-type Note struct {
-	ID        int64     `json:"id"`
-	Username  string    `json:"username"`
-	Content   string    `json:"content"`
-	Pinned    bool      `json:"pinned"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-
 type User struct {
 	Username string `json:"username"`
 	IsAdmin  bool   `json:"isAdmin"`

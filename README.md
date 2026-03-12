@@ -1,6 +1,6 @@
 # lebedinsky.space
 
-Личная стартовая страница с дашбордом сервисов, заметками и управлением через веб.
+Личная стартовая страница с дашбордом сервисов и управлением через веб.
 
 ## Стек
 
@@ -19,14 +19,14 @@ lebedinsky-space/
 │   ├── web/          # React SPA
 │   │   ├── src/
 │   │   │   ├── lib/          # api client, типы, иконки
-│   │   │   ├── hooks/        # useMe, useServices, useNotes, useStatus
-│   │   │   ├── components/   # ServiceCard, NotesPanel, StatusDot
+│   │   │   ├── hooks/        # useMe, useServices, useStatus
+│   │   │   ├── components/   # ServiceCard, StatusDot
 │   │   │   └── pages/        # AdminPage
 │   │   ├── Dockerfile
 │   │   └── nginx.conf
 │   └── api/          # Go API
 │       ├── internal/
-│       │   ├── handlers/     # services, notes, status, me
+│       │   ├── handlers/     # services, status, me
 │       │   ├── middleware/   # auth (Remote-User header)
 │       │   ├── models/
 │       │   ├── db/           # migrations
@@ -47,10 +47,6 @@ lebedinsky-space/
 | PUT | `/services/{id}` | admin | обновить сервис |
 | DELETE | `/services/{id}` | admin | удалить сервис |
 | GET | `/status` | все | статусы сервисов (HEAD-запросы, кэш 30 сек) |
-| GET | `/notes` | авторизован | заметки текущего пользователя |
-| POST | `/notes` | авторизован | создать заметку |
-| PUT | `/notes/{id}` | авторизован | обновить заметку |
-| DELETE | `/notes/{id}` | авторизован | удалить заметку |
 
 ## Локальная разработка
 
