@@ -65,12 +65,38 @@ cd apps/api && go run ./cmd/seed
 | GET | `/services` | все | список сервисов |
 | POST/PUT/DELETE | `/services[/{id}]` | admin | управление сервисами |
 | GET | `/status` | все | статусы сервисов (кэш 30с) |
+| GET | `/metrics` | все | метрики сервера (CPU, RAM, диск, hostname) |
+
+## Виджеты дашборда
+
+На главной странице над сервисами — три виджета в одну строку:
+
+- **ClockWidget** — текущее время (24ч, AM/PM, UTC AM/PM) и дата. Только фронтенд, `setInterval(1000)`.
+- **WeatherWidget** — температура и описание погоды. Использует `navigator.geolocation` + [open-meteo.com](https://open-meteo.com) (без API-ключа) + [bigdatacloud.net](https://www.bigdatacloud.net/geocoding-api/reverse-geocode) для названия города. Обновляется каждые 30 мин.
+- **MetricsWidget** — CPU, RAM, диск в процентах + hostname сервера. Polling `/metrics` каждые 15 сек.
+
+### Endpoint `/metrics`
+
+Использует `github.com/shirou/gopsutil/v3`. В Docker для получения **хостовых** метрик (а не контейнерных) нужны:
+
+```yaml
+environment:
+  HOST_PROC: /host/proc
+  HOST_SYS: /host/sys
+volumes:
+  - /proc:/host/proc:ro
+  - /sys:/host/sys:ro
+```
+
+Оба docker-compose файла (`docker-compose.yml` и `deploy/docker-compose.yml`) уже настроены.
 
 ## Ключевые архитектурные решения
 
 - **Нет mock-базы в тестах** — тесты работают с реальным Postgres через testcontainers
 - **Статусы сервисов** — HEAD-запросы к URL, кэш 30 сек, конкурентно через goroutines
 - **Иконки** — строковое `iconName` хранится в БД, маппится в LucideIcon через `src/lib/icons.ts`
+- **Погода** — браузерная геолокация + open-meteo.com, без API-ключей
+- **Метрики** — gopsutil читает `/proc` хоста через volume mount в Docker
 
 ## Деплой
 

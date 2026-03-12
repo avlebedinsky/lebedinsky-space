@@ -18,3 +18,10 @@ export interface ServiceStatus {
   id: number
   status: 'up' | 'down' | 'unknown'
 }
+
+export interface ServerMetrics {
+  hostname: string
+  cpu: number
+  ram: number
+  disk: number
+}

@@ -1,4 +1,4 @@
-import type { Service, User, ServiceStatus } from './types'
+import type { Service, User, ServiceStatus, ServerMetrics } from './types'
 
 const BASE = '/api'
 
@@ -27,4 +27,6 @@ export const api = {
   },
 
   status: (): Promise<ServiceStatus[]> => request('/status'),
+
+  metrics: (): Promise<ServerMetrics> => request('/metrics'),
 }

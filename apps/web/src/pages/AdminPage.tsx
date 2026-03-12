@@ -5,24 +5,24 @@ import { useServices } from '../hooks/useServices'
 import { getIcon, ICON_NAMES } from '../lib/icons'
 import type { Service } from '../lib/types'
 
-const EMPTY = { name: '', description: '', url: '', iconName: 'Globe', color: '#6366f1', sortOrder: 0 }
+const EMPTY_SERVICE = { name: '', description: '', url: '', iconName: 'Globe', color: '#6366f1', sortOrder: 0 }
 
-type FormData = Omit<Service, 'id' | 'createdAt'>
+type ServiceFormData = Omit<Service, 'id' | 'createdAt'>
 
-function ServiceForm({
+function ItemForm({
   initial,
   onSubmit,
   onCancel,
 }: {
-  initial: FormData
-  onSubmit: (data: FormData) => Promise<void>
+  initial: ServiceFormData
+  onSubmit: (data: ServiceFormData) => Promise<void>
   onCancel: () => void
 }) {
-  const [form, setForm] = useState<FormData>(initial)
+  const [form, setForm] = useState<ServiceFormData>(initial)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const set = (k: keyof FormData, v: string | number) =>
+  const set = (k: keyof ServiceFormData, v: string | number) =>
     setForm(prev => ({ ...prev, [k]: v }))
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,27 +104,28 @@ function ServiceForm({
 }
 
 export default function AdminPage() {
-  const { services, create, update, remove } = useServices()
-  const [creating, setCreating] = useState(false)
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const { services, create: createService, update: updateService, remove: removeService } = useServices()
 
-  const handleCreate = async (data: FormData) => {
-    await create(data)
-    setCreating(false)
+  const [creatingService, setCreatingService] = useState(false)
+  const [editingServiceId, setEditingServiceId] = useState<number | null>(null)
+  const [serviceDeleteError, setServiceDeleteError] = useState<string | null>(null)
+
+  const handleCreateService = async (data: ServiceFormData) => {
+    await createService(data)
+    setCreatingService(false)
   }
 
-  const handleUpdate = async (id: number, data: FormData) => {
-    await update(id, data)
-    setEditingId(null)
+  const handleUpdateService = async (id: number, data: ServiceFormData) => {
+    await updateService(id, data)
+    setEditingServiceId(null)
   }
 
-  const handleRemove = async (id: number) => {
-    setDeleteError(null)
+  const handleRemoveService = async (id: number) => {
+    setServiceDeleteError(null)
     try {
-      await remove(id)
+      await removeService(id)
     } catch (err) {
-      setDeleteError(err instanceof Error ? err.message : 'Ошибка удаления')
+      setServiceDeleteError(err instanceof Error ? err.message : 'Ошибка удаления')
     }
   }
 
@@ -135,40 +136,43 @@ export default function AdminPage() {
           <Link to="/" className="flex items-center gap-1 text-sm text-white/40 transition hover:text-white/70">
             <ArrowLeft size={14} /> Назад
           </Link>
-          <h1 className="text-xl font-bold text-white">Управление сервисами</h1>
+          <h1 className="text-xl font-bold text-white">Управление</h1>
         </div>
 
-        {creating ? (
+        <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-white/30">Сервисы</h2>
+
+        {creatingService ? (
           <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-6">
-            <h2 className="mb-4 text-sm font-medium text-white/60">Новый сервис</h2>
-            <ServiceForm initial={EMPTY} onSubmit={handleCreate} onCancel={() => setCreating(false)} />
+            <p className="mb-4 text-sm font-medium text-white/60">Новый сервис</p>
+            <ItemForm initial={EMPTY_SERVICE} onSubmit={handleCreateService} onCancel={() => setCreatingService(false)} />
           </div>
         ) : (
           <button
-            onClick={() => setCreating(true)}
+            onClick={() => setCreatingService(true)}
             className="mb-6 flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-white/15 py-4 text-sm text-white/40 transition hover:border-white/25 hover:text-white/60"
           >
             <Plus size={16} /> Добавить сервис
           </button>
         )}
 
-        {deleteError && (
+        {serviceDeleteError && (
           <p className="mb-3 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm text-red-400">
-            {deleteError}
+            {serviceDeleteError}
           </p>
         )}
+
         <div className="flex flex-col gap-3">
           {services.map(service => {
             const Icon = getIcon(service.iconName)
             return (
               <div key={service.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                {editingId === service.id ? (
+                {editingServiceId === service.id ? (
                   <>
-                    <h2 className="mb-4 text-sm font-medium text-white/60">Редактировать</h2>
-                    <ServiceForm
+                    <p className="mb-4 text-sm font-medium text-white/60">Редактировать</p>
+                    <ItemForm
                       initial={{ name: service.name, description: service.description, url: service.url, iconName: service.iconName, color: service.color, sortOrder: service.sortOrder }}
-                      onSubmit={data => handleUpdate(service.id, data)}
-                      onCancel={() => setEditingId(null)}
+                      onSubmit={data => handleUpdateService(service.id, data)}
+                      onCancel={() => setEditingServiceId(null)}
                     />
                   </>
                 ) : (
@@ -182,11 +186,11 @@ export default function AdminPage() {
                       <p className="truncate text-sm text-white/40">{service.url}</p>
                     </div>
                     <div className="flex gap-1">
-                      <button onClick={() => setEditingId(service.id)}
+                      <button onClick={() => setEditingServiceId(service.id)}
                         className="flex size-8 items-center justify-center rounded-lg text-white/30 transition hover:bg-white/10 hover:text-white/70">
                         <Pencil size={14} />
                       </button>
-                      <button onClick={() => handleRemove(service.id)}
+                      <button onClick={() => handleRemoveService(service.id)}
                         className="flex size-8 items-center justify-center rounded-lg text-white/30 transition hover:bg-white/10 hover:text-red-400">
                         <Trash2 size={14} />
                       </button>

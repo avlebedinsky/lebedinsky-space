@@ -4,13 +4,15 @@ import { useServices } from './hooks/useServices'
 import { useStatus } from './hooks/useStatus'
 import { useMe } from './hooks/useMe'
 import { ServiceCard } from './components/ServiceCard'
+import { ClockWidget } from './components/widgets/ClockWidget'
+import { WeatherWidget } from './components/widgets/WeatherWidget'
+import { MetricsWidget } from './components/widgets/MetricsWidget'
 import AdminPage from './pages/AdminPage'
 
 function Dashboard() {
   const { user } = useMe()
   const { services, loading } = useServices()
   const statuses = useStatus()
-
   return (
     <div className="min-h-screen bg-gray-950 px-4 py-16">
       <div className="mx-auto max-w-4xl">
@@ -19,9 +21,6 @@ function Dashboard() {
             <h1 className="text-3xl font-bold tracking-tight text-white">
               lebedinsky<span className="text-indigo-400">.space</span>
             </h1>
-            <p className="mt-2 text-sm text-white/40">
-              {user ? `${user.username} · личные сервисы` : 'личные сервисы'}
-            </p>
           </div>
           {user?.isAdmin && (
             <Link
@@ -32,6 +31,12 @@ function Dashboard() {
             </Link>
           )}
         </header>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-4">
+          <ClockWidget />
+          <WeatherWidget />
+          <MetricsWidget />
+        </div>
 
         <main className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {loading

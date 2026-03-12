@@ -47,6 +47,8 @@ func main() {
 
 	r.Get("/status", status.List)
 
+	r.Get("/metrics", handlers.Metrics)
+
 	log.Printf("Starting on :%s (env=%s)", cfg.Port, cfg.Environment)
 	if err := http.ListenAndServe(":"+cfg.Port, r); err != nil {
 		log.Fatalf("server: %v", err)
