@@ -15,12 +15,11 @@ type UserContext struct {
 	IsAdmin  bool
 }
 
-func Auth(adminGroup string) func(http.Handler) http.Handler {
+func Auth(adminGroup string, devMode bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			username := r.Header.Get("Remote-User")
-			if username == "" {
-				// dev fallback
+			if username == "" && devMode {
 				username = r.Header.Get("X-Dev-User")
 			}
 			if username == "" {

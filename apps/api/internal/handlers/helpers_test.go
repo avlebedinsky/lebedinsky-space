@@ -50,7 +50,7 @@ func withUser(req *http.Request, username string, isAdmin bool) *http.Request {
 		enriched = r
 	})
 	rec := httptest.NewRecorder()
-	middleware.Auth("admin")(capture).ServeHTTP(rec, req)
+	middleware.Auth("admin", false)(capture).ServeHTTP(rec, req)
 	return enriched
 }
 

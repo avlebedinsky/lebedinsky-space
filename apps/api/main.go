@@ -36,7 +36,7 @@ func main() {
 	r.Use(chiMiddleware.Logger)
 	r.Use(chiMiddleware.Recoverer)
 	r.Use(corsMiddleware(cfg.Environment))
-	r.Use(middleware.Auth(cfg.AdminGroup))
+	r.Use(middleware.Auth(cfg.AdminGroup, cfg.Environment == "development"))
 
 	r.Get("/me", handlers.Me)
 

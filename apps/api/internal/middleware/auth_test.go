@@ -20,7 +20,7 @@ func okHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestAuth_MissingUser_Returns401(t *testing.T) {
-	handler := middleware.Auth("admin")(http.HandlerFunc(okHandler))
+	handler := middleware.Auth("admin", false)(http.HandlerFunc(okHandler))
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rec := httptest.NewRecorder()
@@ -30,7 +30,7 @@ func TestAuth_MissingUser_Returns401(t *testing.T) {
 }
 
 func TestAuth_RemoteUser_Passes(t *testing.T) {
-	handler := middleware.Auth("admin")(http.HandlerFunc(okHandler))
+	handler := middleware.Auth("admin", false)(http.HandlerFunc(okHandler))
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set("Remote-User", "lav")
@@ -43,7 +43,7 @@ func TestAuth_RemoteUser_Passes(t *testing.T) {
 }
 
 func TestAuth_AdminGroup_SetsIsAdmin(t *testing.T) {
-	handler := middleware.Auth("admin")(http.HandlerFunc(okHandler))
+	handler := middleware.Auth("admin", false)(http.HandlerFunc(okHandler))
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set("Remote-User", "lav")
@@ -56,7 +56,7 @@ func TestAuth_AdminGroup_SetsIsAdmin(t *testing.T) {
 }
 
 func TestAuth_DevFallback_XDevUser(t *testing.T) {
-	handler := middleware.Auth("admin")(http.HandlerFunc(okHandler))
+	handler := middleware.Auth("admin", true)(http.HandlerFunc(okHandler))
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set("X-Dev-User", "devuser")
@@ -67,8 +67,19 @@ func TestAuth_DevFallback_XDevUser(t *testing.T) {
 	assert.Equal(t, "devuser", rec.Header().Get("X-User"))
 }
 
+func TestAuth_DevFallback_DisabledInProd(t *testing.T) {
+	handler := middleware.Auth("admin", false)(http.HandlerFunc(okHandler))
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set("X-Dev-User", "attacker")
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnauthorized, rec.Code)
+}
+
 func TestRequireAdmin_NonAdmin_Returns403(t *testing.T) {
-	handler := middleware.Auth("admin")(
+	handler := middleware.Auth("admin", false)(
 		middleware.RequireAdmin(http.HandlerFunc(okHandler)),
 	)
 
@@ -82,7 +93,7 @@ func TestRequireAdmin_NonAdmin_Returns403(t *testing.T) {
 }
 
 func TestRequireAdmin_Admin_Passes(t *testing.T) {
-	handler := middleware.Auth("admin")(
+	handler := middleware.Auth("admin", false)(
 		middleware.RequireAdmin(http.HandlerFunc(okHandler)),
 	)
 
