@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Pencil, Trash2, Plus, ArrowLeft } from 'lucide-react'
-import { useServices } from '../hooks/useServices'
+import { useServicesStore } from '../store/servicesStore'
 import { getIcon, ICON_NAMES } from '../lib/icons'
+import { ColorPicker } from '../components/ColorPicker'
 import type { Service } from '../lib/types'
 
 const EMPTY_SERVICE = { name: '', description: '', url: '', iconName: 'Globe', color: '#6366f1', sortOrder: 0 }
@@ -75,17 +76,7 @@ function ItemForm({
           </div>
         </label>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-xs text-white/40">Цвет</span>
-          <input type="color" value={form.color} onChange={e => set('color', e.target.value)}
-            className="h-10 w-full cursor-pointer rounded-xl border border-white/10 bg-white/5 p-1" />
-        </label>
-
-        <label className="flex flex-col gap-1">
-          <span className="text-xs text-white/40">Порядок</span>
-          <input type="number" value={form.sortOrder} onChange={e => set('sortOrder', Number(e.target.value))}
-            className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/25" />
-        </label>
+        <ColorPicker label="Цвет" value={form.color} onChange={v => set('color', v)} />
       </div>
 
       {error && <p className="text-sm text-red-400">{error}</p>}
@@ -104,7 +95,7 @@ function ItemForm({
 }
 
 export default function AdminPage() {
-  const { services, create: createService, update: updateService, remove: removeService } = useServices()
+  const { services, create: createService, update: updateService, remove: removeService } = useServicesStore()
 
   const [creatingService, setCreatingService] = useState(false)
   const [editingServiceId, setEditingServiceId] = useState<number | null>(null)
@@ -130,14 +121,18 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 px-4 py-16">
+    <div className="min-h-screen px-4 py-16" style={{ backgroundColor: 'var(--color-bg)' }}>
       <div className="mx-auto max-w-2xl">
-        <div className="mb-8 flex items-center gap-4">
-          <Link to="/" className="flex items-center gap-1 text-sm text-white/40 transition hover:text-white/70">
-            <ArrowLeft size={14} /> Назад
+        <header className="mb-10 flex items-center gap-4">
+          <Link
+            to="/"
+            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 px-3 py-2 text-xs text-white/40 transition hover:border-white/20 hover:text-white/70"
+          >
+            <ArrowLeft size={13} /> Назад
           </Link>
-          <h1 className="text-xl font-bold text-white">Управление</h1>
-        </div>
+          <div className="h-5 w-px bg-white/10" />
+          <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">Управление</h1>
+        </header>
 
         <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-white/30">Сервисы</h2>
 

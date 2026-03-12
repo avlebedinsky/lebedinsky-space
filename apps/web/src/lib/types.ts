@@ -25,3 +25,12 @@ export interface ServerMetrics {
   ram: number
   disk: number
 }
+
+export interface SiteSettings {
+  bgColor: string
+  bgImage: string
+  cardColor: string
+  accentColor: string
+  borderColor: string
+  gridOrder: string[]
+}

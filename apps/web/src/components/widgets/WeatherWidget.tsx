@@ -4,7 +4,7 @@ export function WeatherWidget() {
   const weather = useWeather()
 
   return (
-    <div className="flex flex-col justify-center gap-1 rounded-2xl border border-white/10 bg-white/5 p-6">
+    <div className="flex h-full flex-col justify-center gap-1 rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
       {weather.status === 'loading' && (
         <p className="text-sm text-white/30">Определяю геолокацию…</p>
       )}

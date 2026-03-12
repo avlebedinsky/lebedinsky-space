@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/joho/godotenv"
 
 	"github.com/avlebedinsky/lebedinsky-space/api/internal/config"
 	"github.com/avlebedinsky/lebedinsky-space/api/internal/db"
@@ -15,6 +16,7 @@ import (
 )
 
 func main() {
+	_ = godotenv.Load()
 	cfg := config.Load()
 	ctx := context.Background()
 
@@ -31,11 +33,12 @@ func main() {
 
 	svc := handlers.NewServicesHandler(pool)
 	status := handlers.NewStatusHandler(pool)
+	settings := handlers.NewSettingsHandler(pool)
 
 	r := chi.NewRouter()
 	r.Use(chiMiddleware.Logger)
 	r.Use(chiMiddleware.Recoverer)
-	r.Use(corsMiddleware(cfg.Environment))
+	r.Use(corsMiddleware(cfg.CORSOrigin))
 	r.Use(middleware.Auth(cfg.AdminGroup, cfg.Environment == "development"))
 
 	r.Get("/me", handlers.Me)
@@ -49,19 +52,18 @@ func main() {
 
 	r.Get("/metrics", handlers.Metrics)
 
+	r.Get("/settings", settings.Get)
+	r.With(middleware.RequireAdmin).Put("/settings", settings.Update)
+
 	log.Printf("Starting on :%s (env=%s)", cfg.Port, cfg.Environment)
 	if err := http.ListenAndServe(":"+cfg.Port, r); err != nil {
 		log.Fatalf("server: %v", err)
 	}
 }
 
-func corsMiddleware(env string) func(http.Handler) http.Handler {
+func corsMiddleware(origin string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			origin := "https://lebedinsky.space"
-			if env == "development" {
-				origin = "http://localhost:5173"
-			}
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")

@@ -29,3 +29,12 @@ type ServerMetrics struct {
 	RAM      float64 `json:"ram"`
 	Disk     float64 `json:"disk"`
 }
+
+type SiteSettings struct {
+	BgColor     string   `json:"bgColor"`
+	BgImage     string   `json:"bgImage"`
+	CardColor   string   `json:"cardColor"`
+	AccentColor string   `json:"accentColor"`
+	BorderColor string   `json:"borderColor"`
+	GridOrder   []string `json:"gridOrder"`
+}

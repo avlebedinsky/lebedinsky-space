@@ -9,14 +9,25 @@ type Config struct {
 	Port        string
 	Environment string
 	AdminGroup  string
+	CORSOrigin  string
 }
 
 func Load() *Config {
+	env := getEnv("ENVIRONMENT", "development")
+	defaultCORSOrigin := getEnv("CORS_ORIGIN", "")
+	if defaultCORSOrigin == "" {
+		if env == "development" {
+			defaultCORSOrigin = "http://localhost:5173"
+		} else {
+			defaultCORSOrigin = "https://lebedinsky.space"
+		}
+	}
 	return &Config{
 		DatabaseURL: getEnv("DATABASE_URL", "postgres://app:secret@localhost:5432/lebedinsky"),
 		Port:        getEnv("PORT", "8080"),
-		Environment: getEnv("ENVIRONMENT", "development"),
+		Environment: env,
 		AdminGroup:  getEnv("ADMIN_GROUP", "admin"),
+		CORSOrigin:  defaultCORSOrigin,
 	}
 }
 

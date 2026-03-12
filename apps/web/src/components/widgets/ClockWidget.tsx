@@ -14,7 +14,7 @@ export function ClockWidget() {
   const date = now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
-    <div className="flex flex-col justify-center gap-1 rounded-2xl border border-white/10 bg-white/5 p-6">
+    <div className="flex h-full flex-col justify-center gap-1 rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
       <p className="text-3xl font-bold tabular-nums tracking-tight text-white">{time}</p>
       <p className="text-sm capitalize text-white">{date}</p>
       <p className="text-sm tabular-nums text-white/30">{timeAmPm}</p>

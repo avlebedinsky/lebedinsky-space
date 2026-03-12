@@ -12,11 +12,13 @@ export function ServiceCard({ service, status }: Props) {
   const Icon = getIcon(service.iconName)
 
   return (
-    <a
-      href={service.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group relative flex flex-col gap-4 rounded-2xl border border-white/[0.06] bg-gray-900 p-6 transition-all duration-200 hover:border-white/20 hover:bg-gray-800/80 hover:scale-[1.02] hover:shadow-xl"
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={() => window.open(service.url, '_blank', 'noopener,noreferrer')}
+      onKeyDown={(e) => e.key === 'Enter' && window.open(service.url, '_blank', 'noopener,noreferrer')}
+      className="group relative flex h-full cursor-pointer flex-col gap-4 rounded-2xl border p-6 transition-all duration-200 hover:scale-[1.02] hover:shadow-xl"
+      style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
     >
       <div
         className="flex size-12 items-center justify-center rounded-xl"
@@ -37,6 +39,6 @@ export function ServiceCard({ service, status }: Props) {
         size={16}
         className="absolute right-5 top-5 text-white/20 transition-colors group-hover:text-white/50"
       />
-    </a>
+    </div>
   )
 }

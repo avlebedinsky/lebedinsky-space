@@ -1,0 +1,17 @@
+import type { SiteSettings } from './types'
+
+export const DEFAULT_SETTINGS: SiteSettings = {
+  bgColor: '#030712',
+  bgImage: '',
+  cardColor: '#111827',
+  accentColor: '#818cf8',
+  borderColor: '#ffffff0f',
+  gridOrder: ['clock', 'weather', 'metrics'],
+}
+
+export function applyTheme(settings: SiteSettings) {
+  document.documentElement.style.setProperty('--color-bg', settings.bgColor)
+  document.documentElement.style.setProperty('--color-card', settings.cardColor)
+  document.documentElement.style.setProperty('--color-accent', settings.accentColor)
+  document.documentElement.style.setProperty('--color-border', settings.borderColor)
+}
