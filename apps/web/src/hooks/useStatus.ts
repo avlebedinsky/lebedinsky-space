@@ -7,9 +7,9 @@ export function useStatus(intervalMs = 60_000) {
 
   useEffect(() => {
     const load = () =>
-      api.status().then(list => {
-        setStatuses(new Map(list.map(s => [s.id, s.status])))
-      })
+      api.status()
+        .then(list => setStatuses(new Map(list.map(s => [s.id, s.status]))))
+        .catch(() => {})
 
     load()
     const id = setInterval(load, intervalMs)

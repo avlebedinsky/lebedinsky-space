@@ -27,5 +27,4 @@ export const api = {
   },
 
   status: (): Promise<ServiceStatus[]> => request('/status'),
-
 }

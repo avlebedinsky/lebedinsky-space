@@ -20,6 +20,7 @@ function ServiceForm({
 }) {
   const [form, setForm] = useState<FormData>(initial)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const set = (k: keyof FormData, v: string | number) =>
     setForm(prev => ({ ...prev, [k]: v }))
@@ -27,7 +28,14 @@ function ServiceForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    try { await onSubmit(form) } finally { setSaving(false) }
+    setError(null)
+    try {
+      await onSubmit(form)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка сохранения')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const PreviewIcon = getIcon(form.iconName)
@@ -80,6 +88,7 @@ function ServiceForm({
         </label>
       </div>
 
+      {error && <p className="text-sm text-red-400">{error}</p>}
       <div className="flex gap-2 justify-end">
         <button type="button" onClick={onCancel}
           className="rounded-xl border border-white/10 px-4 py-2 text-sm text-white/50 transition hover:bg-white/5">
@@ -98,6 +107,7 @@ export default function AdminPage() {
   const { services, create, update, remove } = useServices()
   const [creating, setCreating] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const handleCreate = async (data: FormData) => {
     await create(data)
@@ -107,6 +117,15 @@ export default function AdminPage() {
   const handleUpdate = async (id: number, data: FormData) => {
     await update(id, data)
     setEditingId(null)
+  }
+
+  const handleRemove = async (id: number) => {
+    setDeleteError(null)
+    try {
+      await remove(id)
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Ошибка удаления')
+    }
   }
 
   return (
@@ -133,6 +152,11 @@ export default function AdminPage() {
           </button>
         )}
 
+        {deleteError && (
+          <p className="mb-3 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm text-red-400">
+            {deleteError}
+          </p>
+        )}
         <div className="flex flex-col gap-3">
           {services.map(service => {
             const Icon = getIcon(service.iconName)
@@ -162,7 +186,7 @@ export default function AdminPage() {
                         className="flex size-8 items-center justify-center rounded-lg text-white/30 transition hover:bg-white/10 hover:text-white/70">
                         <Pencil size={14} />
                       </button>
-                      <button onClick={() => remove(service.id)}
+                      <button onClick={() => handleRemove(service.id)}
                         className="flex size-8 items-center justify-center rounded-lg text-white/30 transition hover:bg-white/10 hover:text-red-400">
                         <Trash2 size={14} />
                       </button>
