@@ -1,4 +1,4 @@
-import type { Service, Note, User, ServiceStatus } from './types'
+import type { Service, User, ServiceStatus } from './types'
 
 const BASE = '/api'
 
@@ -28,13 +28,4 @@ export const api = {
 
   status: (): Promise<ServiceStatus[]> => request('/status'),
 
-  notes: {
-    list: (): Promise<Note[]> => request('/notes'),
-    create: (data: { content: string; pinned: boolean }): Promise<Note> =>
-      request('/notes', { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: number, data: { content: string; pinned: boolean }): Promise<Note> =>
-      request(`/notes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-    delete: (id: number): Promise<void> =>
-      request(`/notes/${id}`, { method: 'DELETE' }),
-  },
 }

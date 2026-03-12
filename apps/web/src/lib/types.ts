@@ -9,15 +9,6 @@ export interface Service {
   createdAt: string
 }
 
-export interface Note {
-  id: number
-  username: string
-  content: string
-  pinned: boolean
-  createdAt: string
-  updatedAt: string
-}
-
 export interface User {
   username: string
   isAdmin: boolean

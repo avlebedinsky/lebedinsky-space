@@ -31,7 +31,6 @@ func main() {
 
 	svc := handlers.NewServicesHandler(pool)
 	status := handlers.NewStatusHandler(pool)
-	notes := handlers.NewNotesHandler(pool)
 
 	r := chi.NewRouter()
 	r.Use(chiMiddleware.Logger)
@@ -47,11 +46,6 @@ func main() {
 	r.Delete("/services/{id}", middleware.RequireAdmin(http.HandlerFunc(svc.Delete)).ServeHTTP)
 
 	r.Get("/status", status.List)
-
-	r.Get("/notes", notes.List)
-	r.Post("/notes", notes.Create)
-	r.Put("/notes/{id}", notes.Update)
-	r.Delete("/notes/{id}", notes.Delete)
 
 	log.Printf("Starting on :%s (env=%s)", cfg.Port, cfg.Environment)
 	if err := http.ListenAndServe(":"+cfg.Port, r); err != nil {
