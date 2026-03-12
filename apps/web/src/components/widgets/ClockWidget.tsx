@@ -16,9 +16,9 @@ export function ClockWidget() {
   return (
     <div className="flex flex-col justify-center gap-1 rounded-2xl border border-white/10 bg-white/5 p-6">
       <p className="text-3xl font-bold tabular-nums tracking-tight text-white">{time}</p>
+      <p className="text-sm capitalize text-white">{date}</p>
       <p className="text-sm tabular-nums text-white/30">{timeAmPm}</p>
-      <p className="text-sm tabular-nums text-white/20">UTC {timeUtc}</p>
-      <p className="text-sm capitalize text-white/40">{date}</p>
+      <p className="text-sm tabular-nums text-white/30">{timeUtc} UTC</p>
     </div>
   )
 }

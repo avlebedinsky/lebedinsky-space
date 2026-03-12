@@ -6,7 +6,7 @@ function Bar({ label, value }: { label: string; value: number }) {
     <div className="flex flex-col gap-1">
       <div className="flex justify-between text-xs">
         <span className="text-white/50">{label}</span>
-        <span className="tabular-nums text-white/70">{value.toFixed(1)}%</span>
+        <span className="tabular-nums text-white/50">{value.toFixed(1)}%</span>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
         <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${value}%` }} />

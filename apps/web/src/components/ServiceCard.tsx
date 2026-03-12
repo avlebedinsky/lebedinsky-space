@@ -16,7 +16,7 @@ export function ServiceCard({ service, status }: Props) {
       href={service.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-6 transition-all duration-200 hover:border-white/20 hover:bg-white/10 hover:scale-[1.02] hover:shadow-xl"
+      className="group relative flex flex-col gap-4 rounded-2xl border border-white/[0.06] bg-gray-900 p-6 transition-all duration-200 hover:border-white/20 hover:bg-gray-800/80 hover:scale-[1.02] hover:shadow-xl"
     >
       <div
         className="flex size-12 items-center justify-center rounded-xl"

@@ -20,9 +20,9 @@ export function WeatherWidget() {
             <span className="text-3xl leading-none">{getWeatherEmoji(weather.data.weatherCode)}</span>
             <p className="text-3xl font-bold tracking-tight text-white">{weather.data.temp}°C</p>
           </div>
-          <p className="text-sm text-white/40">{getWeatherDesc(weather.data.weatherCode)}</p>
+          <p className="text-sm text-white/50">{getWeatherDesc(weather.data.weatherCode)}</p>
           {weather.data.city && (
-            <p className="text-xs text-white/25">{weather.data.city}</p>
+            <p className="text-xs text-white/30">{weather.data.city}</p>
           )}
         </>
       )}
