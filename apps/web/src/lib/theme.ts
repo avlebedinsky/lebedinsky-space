@@ -6,6 +6,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   cardColor: '#111827',
   accentColor: '#818cf8',
   borderColor: '#ffffff0f',
+  textColor: '#ffffff',
   gridOrder: ['clock', 'weather', 'metrics'],
 }
 
@@ -14,4 +15,5 @@ export function applyTheme(settings: SiteSettings) {
   document.documentElement.style.setProperty('--color-card', settings.cardColor)
   document.documentElement.style.setProperty('--color-accent', settings.accentColor)
   document.documentElement.style.setProperty('--color-border', settings.borderColor)
+  document.documentElement.style.setProperty('--color-text', settings.textColor || '#ffffff')
 }

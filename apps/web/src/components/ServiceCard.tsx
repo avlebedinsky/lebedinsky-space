@@ -18,7 +18,7 @@ export function ServiceCard({ service, status }: Props) {
       onClick={() => window.open(service.url, '_blank', 'noopener,noreferrer')}
       onKeyDown={(e) => e.key === 'Enter' && window.open(service.url, '_blank', 'noopener,noreferrer')}
       className="group relative flex h-full cursor-pointer flex-col gap-4 rounded-2xl border p-6 transition-all duration-200 hover:scale-[1.02] hover:shadow-xl"
-      style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}
+      style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
     >
       <div
         className="flex size-12 items-center justify-center rounded-xl"
@@ -29,15 +29,15 @@ export function ServiceCard({ service, status }: Props) {
 
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-white">{service.name}</h2>
+          <h2 className="text-lg font-semibold">{service.name}</h2>
           {status && <StatusDot status={status} />}
         </div>
-        <p className="mt-1 text-sm text-white/50">{service.description}</p>
+        <p className="mt-1 text-sm text-muted">{service.description}</p>
       </div>
 
       <ExternalLink
         size={16}
-        className="absolute right-5 top-5 text-white/20 transition-colors group-hover:text-white/50"
+        className="absolute right-5 top-5 text-subtle transition-colors group-hover:text-muted"
       />
     </div>
   )

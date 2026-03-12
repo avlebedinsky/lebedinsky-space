@@ -36,5 +36,6 @@ type SiteSettings struct {
 	CardColor   string   `json:"cardColor"`
 	AccentColor string   `json:"accentColor"`
 	BorderColor string   `json:"borderColor"`
+	TextColor   string   `json:"textColor"`
 	GridOrder   []string `json:"gridOrder"`
 }

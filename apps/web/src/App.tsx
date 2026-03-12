@@ -129,28 +129,28 @@ function Dashboard() {
   }, [gridItems, settings, updateSettings])
 
   const bgStyle = settings.bgImage
-    ? { backgroundImage: `url(${settings.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : { backgroundColor: 'var(--color-bg)' }
+    ? { backgroundImage: `url(${settings.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center', color: 'var(--color-text)' }
+    : { backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }
 
   return (
     <div className="min-h-screen px-4 py-16" style={bgStyle}>
       <div className="mx-auto max-w-4xl">
         <header className="mb-10 flex items-center justify-between gap-4">
-          <h1 className="flex items-center gap-3 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+          <h1 className="flex items-center gap-3 text-2xl font-semibold tracking-tight sm:text-3xl">
             <img src="/favicon.svg" alt="logo" className="size-8 sm:size-9" />
-            <span>lebedinsky<span className="text-indigo-400">.space</span></span>
+            <span>lebedinsky<span style={{ color: 'var(--color-accent)' }}>.space</span></span>
           </h1>
           {user?.isAdmin && (
             <div className="flex items-center gap-2">
               <Link
                 to="/settings"
-                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 px-3 py-2 text-xs text-white/40 transition hover:border-white/20 hover:text-white/70"
+                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 px-3 py-2 text-xs text-dim transition hover:border-white/20 hover:text-medium"
               >
                 <Palette size={13} /> Внешний вид
               </Link>
               <Link
                 to="/admin"
-                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 px-3 py-2 text-xs text-white/40 transition hover:border-white/20 hover:text-white/70"
+                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 px-3 py-2 text-xs text-dim transition hover:border-white/20 hover:text-medium"
               >
                 <Settings size={13} /> Управление
               </Link>

@@ -5,4 +5,14 @@
   --color-card: #111827;
   --color-accent: #818cf8;
   --color-border: #ffffff0f;
+  --color-text: #ffffff;
+}
+
+@layer utilities {
+  .text-faint  { color: color-mix(in srgb, var(--color-text) 20%, transparent); }
+  .text-subtle { color: color-mix(in srgb, var(--color-text) 30%, transparent); }
+  .text-dim    { color: color-mix(in srgb, var(--color-text) 40%, transparent); }
+  .text-muted  { color: color-mix(in srgb, var(--color-text) 50%, transparent); }
+  .text-soft   { color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+  .text-medium { color: color-mix(in srgb, var(--color-text) 70%, transparent); }
 }

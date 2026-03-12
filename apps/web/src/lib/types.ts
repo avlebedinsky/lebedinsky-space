@@ -32,5 +32,6 @@ export interface SiteSettings {
   cardColor: string
   accentColor: string
   borderColor: string
+  textColor: string
   gridOrder: string[]
 }

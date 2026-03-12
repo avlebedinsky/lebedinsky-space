@@ -5,8 +5,8 @@ function Bar({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex flex-col gap-1">
       <div className="flex justify-between text-xs">
-        <span className="text-white/50">{label}</span>
-        <span className="tabular-nums text-white/50">{value.toFixed(1)}%</span>
+        <span className="text-muted">{label}</span>
+        <span className="tabular-nums text-muted">{value.toFixed(1)}%</span>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
         <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${value}%` }} />
@@ -19,8 +19,8 @@ export function MetricsWidget() {
   const metrics = useMetrics()
 
   return (
-    <div className="flex h-full flex-col justify-center gap-3 rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
-      <p className="text-xs font-medium uppercase tracking-widest text-white/30">
+    <div className="flex h-full flex-col justify-center gap-3 rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}>
+      <p className="text-xs font-medium uppercase tracking-widest text-subtle">
         {metrics?.hostname ?? 'Сервер'}
       </p>
       {metrics ? (

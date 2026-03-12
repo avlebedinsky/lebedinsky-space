@@ -14,11 +14,11 @@ export function ClockWidget() {
   const date = now.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
-    <div className="flex h-full flex-col justify-center gap-1 rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)' }}>
-      <p className="text-3xl font-bold tabular-nums tracking-tight text-white">{time}</p>
-      <p className="text-sm capitalize text-white">{date}</p>
-      <p className="text-sm tabular-nums text-white/30">{timeAmPm}</p>
-      <p className="text-sm tabular-nums text-white/30">{timeUtc} UTC</p>
+    <div className="flex h-full flex-col justify-center gap-1 rounded-2xl border p-6" style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}>
+      <p className="text-3xl font-bold tabular-nums tracking-tight">{time}</p>
+      <p className="text-sm capitalize">{date}</p>
+      <p className="text-sm tabular-nums text-subtle">{timeAmPm}</p>
+      <p className="text-sm tabular-nums text-subtle">{timeUtc} UTC</p>
     </div>
   )
 }
