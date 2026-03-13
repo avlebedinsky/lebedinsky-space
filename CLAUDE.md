@@ -72,7 +72,7 @@ cd apps/api && go run ./cmd/seed
 На главной странице — три виджета + карточки сервисов в едином grid, все элементы перетаскиваются (`@dnd-kit/core` + `@dnd-kit/sortable`). Порядок сохраняется в `settings.gridOrder` через API.
 
 - **ClockWidget** — текущее время (24ч, AM/PM, UTC AM/PM) и дата. Только фронтенд, `setInterval(1000)`.
-- **WeatherWidget** — температура и описание погоды. Использует `navigator.geolocation` + [open-meteo.com](https://open-meteo.com) (без API-ключа) + [bigdatacloud.net](https://www.bigdatacloud.net/geocoding-api/reverse-geocode) для названия города. Обновляется каждые 30 мин.
+- **WeatherWidget** — температура и описание погоды. Использует `navigator.geolocation` + [open-meteo.com](https://open-meteo.com) (без API-ключа) + [bigdatacloud.net](https://www.bigdatacloud.net/geocoding-api/reverse-geocode) для названия города. Обновляется каждые 30 мин. Данные кэшируются в `localStorage` (`weather_cache`) — при перезагрузке страницы виджет показывает последние данные мгновенно, минуя стадию `loading`. При ошибке обновления ошибка не показывается, если есть кэшированные данные.
 - **MetricsWidget** — CPU, RAM, диск в процентах + hostname сервера. Polling `/metrics` каждые 15 сек.
 
 ### Drag & Drop
@@ -80,6 +80,7 @@ cd apps/api && go run ./cmd/seed
 - `SortableItem` оборачивает каждый элемент grid. Клик при drag блокируется через `useDndMonitor` + `onClickCapture`.
 - `ServiceCard` использует `div` + `window.open` (не `<a>`), чтобы клик можно было надёжно заблокировать после drag.
 - Поле `sortOrder` у сервисов **не редактируется** в форме — порядок управляется только drag & drop.
+- **На мобильных** (touch-устройства, `pointer: coarse`) DnD отключён — grid рендерится напрямую без `DndContext`/`SortableContext`. Определяется через `window.matchMedia('(pointer: coarse)')` в `App.tsx`.
 
 ### Endpoint `/metrics`
 
@@ -96,14 +97,16 @@ volumes:
 
 Оба docker-compose файла (`docker-compose.yml` и `deploy/docker-compose.yml`) уже настроены.
 
+Dev `docker-compose.yml` пробрасывает порт `5432:5432` наружу, чтобы бэкенд и `go test` могли обращаться к Postgres напрямую (без Docker-сети).
+
 ## Ключевые архитектурные решения
 
 - **Нет mock-базы в тестах** — тесты работают с реальным Postgres через testcontainers
 - **Статусы сервисов** — HEAD-запросы к URL, кэш 30 сек, конкурентно через goroutines
 - **Иконки** — строковое `iconName` хранится в БД, маппится в LucideIcon через `src/lib/icons.ts`
-- **Погода** — браузерная геолокация + open-meteo.com, без API-ключей
+- **Погода** — браузерная геолокация + open-meteo.com, без API-ключей; кэш в `localStorage` (`weather_cache`) для мгновенного отображения при перезагрузке
 - **Метрики** — gopsutil читает `/proc` хоста через volume mount в Docker
-- **Темизация** — CSS-переменные (`--color-bg`, `--color-card`, `--color-accent`, `--color-border`) устанавливаются через `applyTheme()` из `src/lib/theme.ts`, настройки хранятся в БД и редактируются на странице `/settings`
+- **Темизация** — CSS-переменные (`--color-bg`, `--color-card`, `--color-accent`, `--color-border`) устанавливаются через `applyTheme()` из `src/lib/theme.ts`, настройки хранятся в БД и редактируются на странице `/settings`. Дефолтный `borderColor` — `#1f2937` (серый Tailwind gray-800, не полупрозрачный белый)
 - **ColorPicker** — переиспользуемый компонент `src/components/ColorPicker.tsx`: кликабельный свотч + hex-значение поверх скрытого нативного `input[type=color]`. Используется в `SettingsPage` и `AdminPage`
 
 ## Деплой
