@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface WeatherData {
   temp: number
@@ -40,8 +40,23 @@ function getWeatherDesc(code: number): string {
 
 export { getWeatherEmoji, getWeatherDesc }
 
+const CACHE_KEY = 'weather_cache'
+
+function loadCache(): WeatherData | undefined {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY)
+    return raw ? (JSON.parse(raw) as WeatherData) : undefined
+  } catch {
+    return undefined
+  }
+}
+
 export function useWeather(intervalMs = 30 * 60 * 1000) {
-  const [state, setState] = useState<WeatherState>({ status: 'loading' })
+  const [state, setState] = useState<WeatherState>(() => {
+    const cached = loadCache()
+    return cached ? { status: 'ok', data: cached } : { status: 'loading' }
+  })
+  const lastDataRef = useRef<WeatherData | undefined>(loadCache())
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -63,17 +78,17 @@ export function useWeather(intervalMs = 30 * 60 * 1000) {
       ])
         .then(([weather, geo]) => {
           if (cancelled) return
-          setState({
-            status: 'ok',
-            data: {
-              temp: Math.round(weather.current.temperature_2m),
-              weatherCode: weather.current.weather_code,
-              city: geo.city || geo.locality || geo.principalSubdivision || '',
-            },
-          })
+          const data: WeatherData = {
+            temp: Math.round(weather.current.temperature_2m),
+            weatherCode: weather.current.weather_code,
+            city: geo.city || geo.locality || geo.principalSubdivision || '',
+          }
+          lastDataRef.current = data
+          localStorage.setItem(CACHE_KEY, JSON.stringify(data))
+          setState({ status: 'ok', data })
         })
         .catch(() => {
-          if (!cancelled) setState({ status: 'error' })
+          if (!cancelled && !lastDataRef.current) setState({ status: 'error' })
         })
         .finally(() => {
           if (!cancelled) {
