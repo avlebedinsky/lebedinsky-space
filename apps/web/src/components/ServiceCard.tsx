@@ -1,3 +1,4 @@
+import { createElement } from 'react'
 import { ExternalLink } from 'lucide-react'
 import type { Service, ServiceStatus } from '../lib/types'
 import { getIcon } from '../lib/icons'
@@ -5,12 +6,10 @@ import { StatusDot } from './StatusDot'
 
 interface Props {
   service: Service
-  status?: ServiceStatus['status']
+  status?: ServiceStatus['status'] | 'loading'
 }
 
 export function ServiceCard({ service, status }: Props) {
-  const Icon = getIcon(service.iconName)
-
   return (
     <div
       role="link"
@@ -24,7 +23,7 @@ export function ServiceCard({ service, status }: Props) {
         className="flex size-12 items-center justify-center rounded-xl"
         style={{ backgroundColor: `${service.color}20`, color: service.color }}
       >
-        <Icon size={24} />
+        {createElement(getIcon(service.iconName), { size: 24 })}
       </div>
 
       <div className="flex-1">

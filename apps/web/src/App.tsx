@@ -69,14 +69,15 @@ function SortableItem({ id, children }: { id: string; children: React.ReactNode 
   )
 }
 
-function renderBlock(id: string, services: Service[], statuses: Map<number, ServiceStatus['status']>) {
+function renderBlock(id: string, services: Service[], statuses: Map<number, ServiceStatus['status']>, statusLoading: boolean) {
   if (id === 'clock') return <ClockWidget />
   if (id === 'weather') return <WeatherWidget />
   if (id === 'metrics') return <MetricsWidget />
   if (id.startsWith('service:')) {
     const service = services.find(s => s.id === Number(id.slice(8)))
     if (!service) return null
-    return <ServiceCard service={service} status={statuses.get(service.id)} />
+    const status = statusLoading ? 'loading' : statuses.get(service.id)
+    return <ServiceCard service={service} status={status} />
   }
   return null
 }
@@ -84,14 +85,14 @@ function renderBlock(id: string, services: Service[], statuses: Map<number, Serv
 function Dashboard() {
   const { user, fetch: fetchUser } = useUserStore()
   const { services, loading: servicesLoading, fetch: fetchServices } = useServicesStore()
-  const statuses = useStatus()
+  const { statuses, loading: statusLoading } = useStatus()
   const { settings, updateSettings, fetch: fetchTheme } = useThemeStore()
 
   useEffect(() => {
     fetchUser()
     fetchServices()
     fetchTheme()
-  }, [])
+  }, [fetchUser, fetchServices, fetchTheme])
 
   const gridItems = useMemo(() => {
     const widgetIds = new Set(['clock', 'weather', 'metrics'])
@@ -178,7 +179,7 @@ function Dashboard() {
             </>
           ) : isMobile ? (
             gridItems.map(id => {
-              const block = renderBlock(id, services, statuses)
+              const block = renderBlock(id, services, statuses, statusLoading)
               if (!block) return null
               return <div key={id} className="h-full">{block}</div>
             })
@@ -186,7 +187,7 @@ function Dashboard() {
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={gridItems} strategy={rectSortingStrategy}>
                 {gridItems.map(id => {
-                  const block = renderBlock(id, services, statuses)
+                  const block = renderBlock(id, services, statuses, statusLoading)
                   if (!block) return null
                   return (
                     <SortableItem key={id} id={id}>

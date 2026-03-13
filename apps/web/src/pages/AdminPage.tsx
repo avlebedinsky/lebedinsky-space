@@ -44,7 +44,7 @@ function ItemForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="col-span-2 flex flex-col gap-1">
           <span className="text-xs text-dim">Название *</span>
           <input required value={form.name} onChange={e => set('name', e.target.value)}
