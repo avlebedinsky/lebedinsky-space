@@ -28,6 +28,17 @@ type ServerMetrics struct {
 	CPU      float64 `json:"cpu"`
 	RAM      float64 `json:"ram"`
 	Disk     float64 `json:"disk"`
+	Uptime   uint64  `json:"uptime"`  // seconds since boot
+	NetIn    uint64  `json:"netIn"`   // cumulative bytes received
+	NetOut   uint64  `json:"netOut"`  // cumulative bytes sent
+}
+
+type ContainerInfo struct {
+	ID     string `json:"id"`     // first 12 chars
+	Name   string `json:"name"`   // without leading "/"
+	Image  string `json:"image"`  // image name without digest
+	State  string `json:"state"`  // "running", "exited", etc.
+	Status string `json:"status"` // human-readable, e.g. "Up 3 days"
 }
 
 type SiteSettings struct {

@@ -51,6 +51,7 @@ func main() {
 	r.Get("/status", status.List)
 
 	r.Get("/metrics", handlers.Metrics)
+	r.Get("/docker", handlers.Docker)
 
 	r.Get("/settings", settings.Get)
 	r.With(middleware.RequireAdmin).Put("/settings", settings.Update)

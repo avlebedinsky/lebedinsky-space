@@ -24,6 +24,17 @@ export interface ServerMetrics {
   cpu: number
   ram: number
   disk: number
+  uptime?: number
+  netIn?: number
+  netOut?: number
+}
+
+export interface ContainerInfo {
+  id: string
+  name: string
+  image: string
+  state: string
+  status: string
 }
 
 export interface SiteSettings {

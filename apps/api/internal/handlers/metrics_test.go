@@ -31,4 +31,7 @@ func TestMetrics_ReturnsValidJSON(t *testing.T) {
 	assert.LessOrEqual(t, result.RAM, 100.0)
 	assert.GreaterOrEqual(t, result.Disk, 0.0)
 	assert.LessOrEqual(t, result.Disk, 100.0)
+	assert.GreaterOrEqual(t, result.Uptime, uint64(0))
+	assert.GreaterOrEqual(t, result.NetIn, uint64(0))
+	assert.GreaterOrEqual(t, result.NetOut, uint64(0))
 }

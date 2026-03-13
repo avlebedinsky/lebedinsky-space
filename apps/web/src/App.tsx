@@ -25,6 +25,8 @@ import { ServiceCard } from './components/ServiceCard'
 import { ClockWidget } from './components/widgets/ClockWidget'
 import { WeatherWidget } from './components/widgets/WeatherWidget'
 import { MetricsWidget } from './components/widgets/MetricsWidget'
+import { NetworkWidget } from './components/widgets/NetworkWidget'
+import { DockerWidget } from './components/widgets/DockerWidget'
 import AdminPage from './pages/AdminPage'
 import SettingsPage from './pages/SettingsPage'
 import type { Service, ServiceStatus } from './lib/types'
@@ -73,6 +75,8 @@ function renderBlock(id: string, services: Service[], statuses: Map<number, Serv
   if (id === 'clock') return <ClockWidget />
   if (id === 'weather') return <WeatherWidget />
   if (id === 'metrics') return <MetricsWidget />
+  if (id === 'network') return <NetworkWidget />
+  if (id === 'docker') return <DockerWidget />
   if (id.startsWith('service:')) {
     const service = services.find(s => s.id === Number(id.slice(8)))
     if (!service) return null
@@ -89,7 +93,7 @@ function Dashboard() {
   const { settings, updateSettings } = useThemeStore()
 
   const gridItems = useMemo(() => {
-    const widgetIds = new Set(['clock', 'weather', 'metrics'])
+    const widgetIds = new Set(['clock', 'weather', 'metrics', 'network', 'docker'])
     const serviceMap = new Map(services.map(s => [s.id, s]))
 
     const ordered: string[] = []
@@ -103,6 +107,9 @@ function Dashboard() {
     }
     for (const w of ['clock', 'weather', 'metrics']) {
       if (!ordered.includes(w)) ordered.unshift(w)
+    }
+    for (const w of ['network', 'docker']) {
+      if (!ordered.includes(w)) ordered.push(w)
     }
     for (const s of services) {
       const key = `service:${s.id}`
@@ -167,6 +174,8 @@ function Dashboard() {
               <ClockWidget />
               <WeatherWidget />
               <MetricsWidget />
+              <NetworkWidget />
+              <DockerWidget />
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="h-36 animate-pulse rounded-2xl border border-gray-800 bg-gray-900" />
               ))}
