@@ -9,7 +9,7 @@
     "dev:api": "cd apps/api && go run .",
     "build:web": "npm run build -w apps/web",
     "lint:web": "npm run lint -w apps/web",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "devDependencies": {
     "husky": "^9.1.7",
