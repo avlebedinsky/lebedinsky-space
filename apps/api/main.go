@@ -34,6 +34,7 @@ func main() {
 	svc := handlers.NewServicesHandler(pool)
 	status := handlers.NewStatusHandler(pool)
 	settings := handlers.NewSettingsHandler(pool)
+	rss := handlers.NewRSSHandler(pool)
 
 	r := chi.NewRouter()
 	r.Use(chiMiddleware.Logger)
@@ -55,6 +56,11 @@ func main() {
 
 	r.Get("/settings", settings.Get)
 	r.With(middleware.RequireAdmin).Put("/settings", settings.Update)
+
+	r.Get("/rss/feeds", rss.ListFeeds)
+	r.Post("/rss/feeds", middleware.RequireAdmin(http.HandlerFunc(rss.CreateFeed)).ServeHTTP)
+	r.Delete("/rss/feeds/{id}", middleware.RequireAdmin(http.HandlerFunc(rss.DeleteFeed)).ServeHTTP)
+	r.Get("/rss/items", rss.FetchItems)
 
 	log.Printf("Starting on :%s (env=%s)", cfg.Port, cfg.Environment)
 	if err := http.ListenAndServe(":"+cfg.Port, r); err != nil {

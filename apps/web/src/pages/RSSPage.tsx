@@ -1,0 +1,150 @@
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft, ExternalLink, ChevronDown } from 'lucide-react'
+import { useThemeStore } from '../store/themeStore'
+import { api } from '../lib/api'
+import type { RSSFeedWithItems } from '../lib/types'
+
+function formatDate(iso: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '').trim()
+}
+
+export default function RSSPage() {
+  const { settings } = useThemeStore()
+  const [feeds, setFeeds] = useState<RSSFeedWithItems[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
+
+  useEffect(() => {
+    api.rss.items()
+      .then(data => {
+        setFeeds(data)
+        setCollapsed(new Set(data.map(f => f.feed.id)))
+      })
+      .catch(() => setError('Не удалось загрузить ленты'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const toggleCollapsed = (id: number) =>
+    setCollapsed(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+
+  const bgStyle = settings.bgImage
+    ? { backgroundImage: `url(${settings.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center', color: 'var(--color-text)' }
+    : { backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }
+
+  return (
+    <div className="min-h-screen px-4 py-16" style={bgStyle}>
+      <div className="mx-auto max-w-4xl">
+        <header className="mb-10 flex items-center gap-4">
+          <Link
+            to="/"
+            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim cursor-pointer transition hover:border-gray-600 hover:text-medium"
+          >
+            <ArrowLeft size={13} /> Назад
+          </Link>
+          <div className="h-5 w-px bg-gray-800" />
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">RSS</h1>
+        </header>
+
+        {loading && (
+          <div className="flex flex-col gap-6">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="flex flex-col gap-3">
+                <div className="h-5 w-40 animate-pulse rounded-lg bg-gray-800" />
+                {Array.from({ length: 4 }).map((_, j) => (
+                  <div key={j} className="h-16 animate-pulse rounded-2xl border border-gray-800 bg-gray-900" />
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {error && (
+          <p className="rounded-xl border border-red-900 bg-red-950 px-4 py-3 text-sm text-red-400">{error}</p>
+        )}
+
+        {!loading && !error && feeds.length === 0 && (
+          <p className="text-sm text-muted">Нет RSS-лент. Добавьте их в панели управления.</p>
+        )}
+
+        {!loading && !error && (
+          <div className="flex flex-col gap-4">
+            {feeds.map(({ feed, items }) => {
+              const isCollapsed = collapsed.has(feed.id)
+              return (
+                <section key={feed.id} className="rounded-2xl border border-gray-800 bg-gray-900">
+                  <button
+                    onClick={() => toggleCollapsed(feed.id)}
+                    className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-gray-800/40 rounded-2xl"
+                  >
+                    <ChevronDown
+                      size={13}
+                      className="shrink-0 text-subtle transition-transform duration-200"
+                      style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}
+                    />
+                    <span className="flex-1 text-sm font-semibold tracking-wide">{feed.title}</span>
+                    <span className="rounded-md bg-gray-800 px-2 py-0.5 text-xs tabular-nums text-muted">
+                      {items.length}
+                    </span>
+                    <a
+                      href={feed.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-subtle transition hover:text-medium"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <ExternalLink size={12} />
+                    </a>
+                  </button>
+
+                  {!isCollapsed && (
+                    <div className="flex flex-col gap-px border-t border-gray-800">
+                      {items.length === 0 ? (
+                        <p className="px-4 py-3 text-sm text-muted">Нет записей</p>
+                      ) : (
+                        items.map((item, i) => {
+                          const desc = stripHtml(item.description)
+                          return (
+                            <a
+                              key={i}
+                              href={item.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group flex flex-col gap-1 px-4 py-3 transition hover:bg-gray-800/50 last:rounded-b-2xl"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <span className="font-medium leading-snug group-hover:underline">{item.title}</span>
+                                {item.published && (
+                                  <span className="shrink-0 text-xs text-muted">{formatDate(item.published)}</span>
+                                )}
+                              </div>
+                              {desc && (
+                                <p className="line-clamp-2 text-sm text-muted">{desc}</p>
+                              )}
+                            </a>
+                          )
+                        })
+                      )}
+                    </div>
+                  )}
+                </section>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

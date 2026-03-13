@@ -37,6 +37,25 @@ export interface ContainerInfo {
   status: string
 }
 
+export interface RSSFeed {
+  id: number
+  title: string
+  url: string
+  createdAt: string
+}
+
+export interface RSSItem {
+  title: string
+  link: string
+  description: string
+  published: string
+}
+
+export interface RSSFeedWithItems {
+  feed: RSSFeed
+  items: RSSItem[]
+}
+
 export interface SiteSettings {
   bgColor: string
   bgImage: string

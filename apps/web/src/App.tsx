@@ -1,6 +1,6 @@
 import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
-import { Settings, Palette } from 'lucide-react'
+import { Settings, Palette, Rss } from 'lucide-react'
 import {
   DndContext,
   closestCenter,
@@ -29,6 +29,7 @@ import { NetworkWidget } from './components/widgets/NetworkWidget'
 import { DockerWidget } from './components/widgets/DockerWidget'
 import AdminPage from './pages/AdminPage'
 import SettingsPage from './pages/SettingsPage'
+import RSSPage from './pages/RSSPage'
 import type { Service, ServiceStatus } from './lib/types'
 
 function SortableItem({ id, children }: { id: string; children: React.ReactNode }) {
@@ -150,22 +151,30 @@ function Dashboard() {
             <img src="/favicon.svg" alt="logo" className="size-8 sm:size-9" />
             <span>lebedinsky<span style={{ color: 'var(--color-accent)' }}>.space</span></span>
           </h1>
-          {user?.isAdmin && (
-            <div className="flex items-center gap-2">
-              <Link
-                to="/settings"
-                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim transition hover:border-gray-600 hover:text-medium"
-              >
-                <Palette size={13} /> <span className="hidden sm:inline">Внешний вид</span>
-              </Link>
-              <Link
-                to="/admin"
-                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim transition hover:border-gray-600 hover:text-medium"
-              >
-                <Settings size={13} /> <span className="hidden sm:inline">Управление</span>
-              </Link>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <Link
+              to="/rss"
+              className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim transition hover:border-gray-600 hover:text-medium"
+            >
+              <Rss size={13} /> <span className="hidden sm:inline">RSS</span>
+            </Link>
+            {user?.isAdmin && (
+              <>
+                <Link
+                  to="/settings"
+                  className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim transition hover:border-gray-600 hover:text-medium"
+                >
+                  <Palette size={13} /> <span className="hidden sm:inline">Внешний вид</span>
+                </Link>
+                <Link
+                  to="/admin"
+                  className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim transition hover:border-gray-600 hover:text-medium"
+                >
+                  <Settings size={13} /> <span className="hidden sm:inline">Управление</span>
+                </Link>
+              </>
+            )}
+          </div>
         </header>
 
         <main className="grid select-none grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" style={{ gridAutoRows: '160px' }}>
@@ -221,6 +230,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Dashboard />} />
+      <Route path="/rss" element={<RSSPage />} />
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/settings" element={<SettingsPage />} />
     </Routes>

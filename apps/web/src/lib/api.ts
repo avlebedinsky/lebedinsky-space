@@ -1,4 +1,4 @@
-import type { Service, User, ServiceStatus, ServerMetrics, SiteSettings, ContainerInfo } from './types'
+import type { Service, User, ServiceStatus, ServerMetrics, SiteSettings, ContainerInfo, RSSFeed, RSSFeedWithItems } from './types'
 
 const BASE = '/api'
 
@@ -8,7 +8,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     headers: { 'Content-Type': 'application/json', ...init?.headers },
     ...init,
   })
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+  if (!res.ok) {
+    const text = await res.text().catch(() => '')
+    throw new Error(text || `${res.status} ${res.statusText}`)
+  }
   if (res.status === 204) return undefined as T
   return res.json()
 }
@@ -36,5 +39,16 @@ export const api = {
     get: (): Promise<SiteSettings> => request('/settings'),
     update: (data: SiteSettings): Promise<SiteSettings> =>
       request('/settings', { method: 'PUT', body: JSON.stringify(data) }),
+  },
+
+  rss: {
+    feeds: {
+      list: (): Promise<RSSFeed[]> => request('/rss/feeds'),
+      create: (data: { title: string; url: string }): Promise<RSSFeed> =>
+        request('/rss/feeds', { method: 'POST', body: JSON.stringify(data) }),
+      delete: (id: number): Promise<void> =>
+        request(`/rss/feeds/${id}`, { method: 'DELETE' }),
+    },
+    items: (): Promise<RSSFeedWithItems[]> => request('/rss/items'),
   },
 }

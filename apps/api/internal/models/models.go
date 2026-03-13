@@ -41,6 +41,25 @@ type ContainerInfo struct {
 	Status string `json:"status"` // human-readable, e.g. "Up 3 days"
 }
 
+type RSSFeed struct {
+	ID        int64     `json:"id"`
+	Title     string    `json:"title"`
+	URL       string    `json:"url"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+type RSSItem struct {
+	Title       string `json:"title"`
+	Link        string `json:"link"`
+	Description string `json:"description"`
+	Published   string `json:"published"`
+}
+
+type RSSFeedWithItems struct {
+	Feed  RSSFeed   `json:"feed"`
+	Items []RSSItem `json:"items"`
+}
+
 type SiteSettings struct {
 	BgColor     string   `json:"bgColor"`
 	BgImage     string   `json:"bgImage"`
