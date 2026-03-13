@@ -14,7 +14,6 @@ export default function SettingsPage() {
   const [draft, setDraft] = useState<SiteSettings>(settings)
   const [bgMode, setBgMode] = useState<'color' | 'image'>(settings.bgImage ? 'image' : 'color')
   const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     setDraft(settings)
@@ -32,8 +31,6 @@ export default function SettingsPage() {
     setSaving(true)
     try {
       await updateSettings(draft)
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
     } finally {
       setSaving(false)
     }
@@ -45,8 +42,6 @@ export default function SettingsPage() {
     setSaving(true)
     try {
       await updateSettings(DEFAULT_SETTINGS)
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
     } finally {
       setSaving(false)
     }
@@ -166,7 +161,7 @@ export default function SettingsPage() {
                 <ColorPicker label="Цвет текста" value={draft.textColor} onChange={v => set('textColor', v)} />
                 <ColorPicker label="Акцентный цвет" value={draft.accentColor} onChange={v => set('accentColor', v)} />
               </div>
-              <div className="mt-4 flex items-center gap-2">
+              <div className="mt-4 flex items-center">
                 <span className="text-sm" style={{ color: draft.textColor }}>lebedinsky</span><span className="text-sm" style={{ color: draft.accentColor }}>.space</span>
               </div>
             </section>
@@ -181,7 +176,7 @@ export default function SettingsPage() {
                 disabled={saving}
                 className="rounded-xl border border-gray-700 bg-gray-800 px-4 py-2 text-sm text-dim cursor-pointer transition hover:border-gray-600 hover:text-soft disabled:opacity-50"
               >
-                Сбросить к умолчаниям
+                Сбросить
               </button>
               <button
                 type="button"
@@ -190,7 +185,7 @@ export default function SettingsPage() {
                 className="rounded-xl px-4 py-2 text-sm font-medium cursor-pointer transition hover:opacity-85 disabled:opacity-50"
                 style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-text)' }}
               >
-                {saving ? 'Сохраняю…' : saved ? 'Сохранено ✓' : 'Сохранить'}
+                Сохранить
               </button>
             </div>
           </div>

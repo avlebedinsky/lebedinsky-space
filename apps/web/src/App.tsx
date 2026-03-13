@@ -83,16 +83,10 @@ function renderBlock(id: string, services: Service[], statuses: Map<number, Serv
 }
 
 function Dashboard() {
-  const { user, fetch: fetchUser } = useUserStore()
-  const { services, loading: servicesLoading, fetch: fetchServices } = useServicesStore()
+  const { user } = useUserStore()
+  const { services, loading: servicesLoading } = useServicesStore()
   const { statuses, loading: statusLoading } = useStatus()
-  const { settings, updateSettings, fetch: fetchTheme } = useThemeStore()
-
-  useEffect(() => {
-    fetchUser()
-    fetchServices()
-    fetchTheme()
-  }, [fetchUser, fetchServices, fetchTheme])
+  const { settings, updateSettings } = useThemeStore()
 
   const gridItems = useMemo(() => {
     const widgetIds = new Set(['clock', 'weather', 'metrics'])
@@ -204,14 +198,30 @@ function Dashboard() {
   )
 }
 
+function AppRoutes() {
+  const { fetch: fetchUser } = useUserStore()
+  const { fetch: fetchTheme } = useThemeStore()
+  const { fetch: fetchServices } = useServicesStore()
+
+  useEffect(() => {
+    fetchUser()
+    fetchTheme()
+    fetchServices()
+  }, [fetchUser, fetchTheme, fetchServices])
+
+  return (
+    <Routes>
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/admin" element={<AdminPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
+    </Routes>
+  )
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-      </Routes>
+      <AppRoutes />
     </BrowserRouter>
   )
 }
