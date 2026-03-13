@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useEffect, useRef } from 'react'
+import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import { Settings, Palette } from 'lucide-react'
 import {
@@ -116,6 +116,14 @@ function Dashboard() {
     return ordered
   }, [settings.gridOrder, services])
 
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(pointer: coarse)').matches)
+  useEffect(() => {
+    const mq = window.matchMedia('(pointer: coarse)')
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   )
@@ -133,10 +141,10 @@ function Dashboard() {
     : { backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }
 
   return (
-    <div className="min-h-screen px-4 py-16" style={bgStyle}>
+    <div className="min-h-screen overflow-x-hidden px-4 py-16" style={bgStyle}>
       <div className="mx-auto max-w-4xl">
         <header className="mb-10 flex items-center justify-between gap-4">
-          <h1 className="flex items-center gap-3 text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h1 className="flex min-w-0 items-center gap-3 text-2xl font-semibold tracking-tight sm:text-3xl">
             <img src="/favicon.svg" alt="logo" className="size-8 sm:size-9" />
             <span>lebedinsky<span style={{ color: 'var(--color-accent)' }}>.space</span></span>
           </h1>
@@ -144,15 +152,15 @@ function Dashboard() {
             <div className="flex items-center gap-2">
               <Link
                 to="/settings"
-                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 px-3 py-2 text-xs text-dim transition hover:border-white/20 hover:text-medium"
+                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim transition hover:border-gray-600 hover:text-medium"
               >
-                <Palette size={13} /> Внешний вид
+                <Palette size={13} /> <span className="hidden sm:inline">Внешний вид</span>
               </Link>
               <Link
                 to="/admin"
-                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 px-3 py-2 text-xs text-dim transition hover:border-white/20 hover:text-medium"
+                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim transition hover:border-gray-600 hover:text-medium"
               >
-                <Settings size={13} /> Управление
+                <Settings size={13} /> <span className="hidden sm:inline">Управление</span>
               </Link>
             </div>
           )}
@@ -165,9 +173,15 @@ function Dashboard() {
               <WeatherWidget />
               <MetricsWidget />
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-36 animate-pulse rounded-2xl border border-white/10 bg-white/5" />
+                <div key={i} className="h-36 animate-pulse rounded-2xl border border-gray-800 bg-gray-900" />
               ))}
             </>
+          ) : isMobile ? (
+            gridItems.map(id => {
+              const block = renderBlock(id, services, statuses)
+              if (!block) return null
+              return <div key={id} className="h-full">{block}</div>
+            })
           ) : (
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={gridItems} strategy={rectSortingStrategy}>

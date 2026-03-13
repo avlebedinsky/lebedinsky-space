@@ -5,7 +5,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   bgImage: '',
   cardColor: '#111827',
   accentColor: '#818cf8',
-  borderColor: '#ffffff0f',
+  borderColor: '#1f2937',
   textColor: '#ffffff',
   gridOrder: ['clock', 'weather', 'metrics'],
 }

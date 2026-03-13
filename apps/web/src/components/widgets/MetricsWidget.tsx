@@ -8,7 +8,7 @@ function Bar({ label, value }: { label: string; value: number }) {
         <span className="text-muted">{label}</span>
         <span className="tabular-nums text-muted">{value.toFixed(1)}%</span>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+      <div className="h-1.5 overflow-hidden rounded-full bg-gray-800">
         <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${value}%` }} />
       </div>
     </div>
@@ -32,7 +32,7 @@ export function MetricsWidget() {
       ) : (
         <div className="flex flex-col gap-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-4 animate-pulse rounded bg-white/5" />
+            <div key={i} className="h-4 animate-pulse rounded bg-gray-900" />
           ))}
         </div>
       )}

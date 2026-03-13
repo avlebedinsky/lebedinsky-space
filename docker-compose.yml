@@ -43,6 +43,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-lebedinsky}
       POSTGRES_USER: ${POSTGRES_USER:-lebedinsky}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:

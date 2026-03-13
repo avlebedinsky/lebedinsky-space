@@ -48,26 +48,26 @@ function ItemForm({
         <label className="col-span-2 flex flex-col gap-1">
           <span className="text-xs text-dim">Название *</span>
           <input required value={form.name} onChange={e => set('name', e.target.value)}
-            className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none focus:border-white/25" />
+            className="rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm outline-none focus:border-gray-600" />
         </label>
 
         <label className="col-span-2 flex flex-col gap-1">
           <span className="text-xs text-dim">Описание</span>
           <input value={form.description} onChange={e => set('description', e.target.value)}
-            className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none focus:border-white/25" />
+            className="rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm outline-none focus:border-gray-600" />
         </label>
 
         <label className="col-span-2 flex flex-col gap-1">
           <span className="text-xs text-dim">URL *</span>
           <input required value={form.url} onChange={e => set('url', e.target.value)}
-            className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none focus:border-white/25" />
+            className="rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm outline-none focus:border-gray-600" />
         </label>
 
         <label className="flex flex-col gap-1">
           <span className="text-xs text-dim">Иконка</span>
           <div className="flex items-center gap-2">
             <select value={form.iconName} onChange={e => set('iconName', e.target.value)}
-              className="flex-1 rounded-xl border border-white/10 bg-gray-900 px-3 py-2 text-sm outline-none focus:border-white/25">
+              className="flex-1 rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm outline-none focus:border-gray-600">
               {ICON_NAMES.map(n => <option key={n} value={n}>{n}</option>)}
             </select>
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl"
@@ -83,11 +83,11 @@ function ItemForm({
       {error && <p className="text-sm text-red-400">{error}</p>}
       <div className="flex gap-2 justify-end">
         <button type="button" onClick={onCancel}
-          className="rounded-xl border border-white/10 px-4 py-2 text-sm text-muted transition hover:bg-white/5">
+          className="rounded-xl border border-gray-700 bg-gray-800 px-4 py-2 text-sm text-muted cursor-pointer transition hover:border-gray-600">
           Отмена
         </button>
         <button type="submit" disabled={saving}
-          className="rounded-xl px-4 py-2 text-sm font-medium transition hover:opacity-85 disabled:opacity-50"
+          className="rounded-xl px-4 py-2 text-sm font-medium cursor-pointer transition hover:opacity-85 disabled:opacity-50"
           style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-text)' }}>{saving ? 'Сохраняю…' : 'Сохранить'}
         </button>
       </div>
@@ -128,36 +128,37 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen px-4 py-16" style={bgStyle}>
-      <div className="mx-auto max-w-2xl">
-        <header className="mb-10 flex items-center gap-4">
-          <Link
-            to="/"
-            className="flex shrink-0 items-center gap-1.5 rounded-xl border border-white/10 px-3 py-2 text-xs text-dim transition hover:border-white/20 hover:text-medium"
-          >
-            <ArrowLeft size={13} /> Назад
-          </Link>
-          <div className="h-5 w-px bg-white/10" />
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Управление</h1>
+      <div className="mx-auto max-w-4xl">
+        <header className="mb-10 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Link
+              to="/"
+              className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim cursor-pointer transition hover:border-gray-600 hover:text-medium"
+            >
+              <ArrowLeft size={13} /> Назад
+            </Link>
+            <div className="h-5 w-px bg-gray-800" />
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Управление</h1>
+          </div>
+          {!creatingService && (
+            <button
+              onClick={() => setCreatingService(true)}
+              className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim cursor-pointer transition hover:border-gray-600 hover:text-medium"
+            >
+              <Plus size={13} /> <span className="hidden sm:inline">Добавить сервис</span>
+            </button>
+          )}
         </header>
 
-        <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-subtle">Сервисы</h2>
-
-        {creatingService ? (
-          <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-6">
+        {creatingService && (
+          <div className="mb-6 rounded-2xl border border-gray-800 bg-gray-900 p-6">
             <p className="mb-4 text-sm font-medium text-soft">Новый сервис</p>
             <ItemForm initial={EMPTY_SERVICE} onSubmit={handleCreateService} onCancel={() => setCreatingService(false)} />
           </div>
-        ) : (
-          <button
-            onClick={() => setCreatingService(true)}
-            className="mb-6 flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-white/15 py-4 text-sm text-dim transition hover:border-white/25 hover:text-soft"
-          >
-            <Plus size={16} /> Добавить сервис
-          </button>
         )}
 
         {serviceDeleteError && (
-          <p className="mb-3 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm text-red-400">
+          <p className="mb-3 rounded-xl border border-red-900 bg-red-950 px-4 py-2 text-sm text-red-400">
             {serviceDeleteError}
           </p>
         )}
@@ -166,7 +167,7 @@ export default function AdminPage() {
           {services.map(service => {
             const Icon = getIcon(service.iconName)
             return (
-              <div key={service.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div key={service.id} className="rounded-2xl border border-gray-800 bg-gray-900 p-4">
                 {editingServiceId === service.id ? (
                   <>
                     <p className="mb-4 text-sm font-medium text-soft">Редактировать</p>
@@ -188,11 +189,11 @@ export default function AdminPage() {
                     </div>
                     <div className="flex gap-1">
                       <button onClick={() => setEditingServiceId(service.id)}
-                        className="flex size-8 items-center justify-center rounded-lg text-subtle transition hover:bg-white/10 hover:text-medium">
+                        className="flex size-8 items-center justify-center rounded-lg text-subtle cursor-pointer transition hover:bg-gray-800 hover:text-medium">
                         <Pencil size={14} />
                       </button>
                       <button onClick={() => handleRemoveService(service.id)}
-                        className="flex size-8 items-center justify-center rounded-lg text-subtle transition hover:bg-white/10 hover:text-red-400">
+                        className="flex size-8 items-center justify-center rounded-lg text-subtle cursor-pointer transition hover:bg-gray-800 hover:text-red-400">
                         <Trash2 size={14} />
                       </button>
                     </div>

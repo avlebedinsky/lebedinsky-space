@@ -5,7 +5,7 @@ interface Props {
 const config = {
   up: 'bg-emerald-400',
   down: 'bg-red-500',
-  unknown: 'bg-white/20',
+  unknown: 'bg-gray-600',
 }
 
 export function StatusDot({ status }: Props) {
