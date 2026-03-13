@@ -30,7 +30,7 @@ export function DockerWidget() {
       ) : !containers || containers.length === 0 ? (
         <p className="text-sm text-muted">Нет данных</p>
       ) : (
-        <div className="flex flex-col gap-1.5 overflow-y-auto">
+        <div className="flex flex-col gap-1.5 overflow-y-auto pr-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-700 hover:[&::-webkit-scrollbar-thumb]:bg-gray-600">
           {containers.map((c) => (
             <div key={c.id} className="flex items-center gap-2">
               <StateDot state={c.state} />
