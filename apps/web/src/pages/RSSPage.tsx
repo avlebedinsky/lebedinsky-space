@@ -26,7 +26,6 @@ export default function RSSPage() {
     api.rss.items()
       .then(data => {
         setFeeds(data)
-        setCollapsed(new Set(data.map(f => f.feed.id)))
       })
       .catch(() => setError('Не удалось загрузить ленты'))
       .finally(() => setLoading(false))
