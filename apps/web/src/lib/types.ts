@@ -6,6 +6,7 @@ export interface Service {
   iconName: string
   color: string
   sortOrder: number
+  hidden: boolean
   createdAt: string
 }
 
@@ -64,4 +65,5 @@ export interface SiteSettings {
   borderColor: string
   textColor: string
   gridOrder: string[]
+  hiddenWidgets: string[]
 }

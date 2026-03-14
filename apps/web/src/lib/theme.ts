@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   borderColor: '#1f2937',
   textColor: '#ffffff',
   gridOrder: ['clock', 'weather', 'metrics'],
+  hiddenWidgets: [],
 }
 
 export function applyTheme(settings: SiteSettings) {

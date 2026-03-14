@@ -10,6 +10,7 @@ type Service struct {
 	IconName    string    `json:"iconName"`
 	Color       string    `json:"color"`
 	SortOrder   int       `json:"sortOrder"`
+	Hidden      bool      `json:"hidden"`
 	CreatedAt   time.Time `json:"createdAt"`
 }
 
@@ -61,11 +62,12 @@ type RSSFeedWithItems struct {
 }
 
 type SiteSettings struct {
-	BgColor     string   `json:"bgColor"`
-	BgImage     string   `json:"bgImage"`
-	CardColor   string   `json:"cardColor"`
-	AccentColor string   `json:"accentColor"`
-	BorderColor string   `json:"borderColor"`
-	TextColor   string   `json:"textColor"`
-	GridOrder   []string `json:"gridOrder"`
+	BgColor       string   `json:"bgColor"`
+	BgImage       string   `json:"bgImage"`
+	CardColor     string   `json:"cardColor"`
+	AccentColor   string   `json:"accentColor"`
+	BorderColor   string   `json:"borderColor"`
+	TextColor     string   `json:"textColor"`
+	GridOrder     []string `json:"gridOrder"`
+	HiddenWidgets []string `json:"hiddenWidgets"`
 }

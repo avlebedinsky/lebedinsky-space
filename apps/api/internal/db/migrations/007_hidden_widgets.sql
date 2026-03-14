@@ -1,0 +1,1 @@
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS hidden_widgets TEXT NOT NULL DEFAULT '[]';

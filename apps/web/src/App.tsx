@@ -95,29 +95,32 @@ function Dashboard() {
 
   const gridItems = useMemo(() => {
     const widgetIds = new Set(['clock', 'weather', 'metrics', 'network', 'docker'])
+    const hiddenWidgets = new Set(settings.hiddenWidgets ?? [])
     const serviceMap = new Map(services.map(s => [s.id, s]))
 
     const ordered: string[] = []
     for (const id of settings.gridOrder) {
       if (widgetIds.has(id)) {
-        ordered.push(id)
+        if (!hiddenWidgets.has(id)) ordered.push(id)
       } else if (id.startsWith('service:')) {
         const sid = Number(id.slice(8))
-        if (serviceMap.has(sid)) ordered.push(id)
+        const svc = serviceMap.get(sid)
+        if (svc && !svc.hidden) ordered.push(id)
       }
     }
     for (const w of ['clock', 'weather', 'metrics']) {
-      if (!ordered.includes(w)) ordered.unshift(w)
+      if (!hiddenWidgets.has(w) && !ordered.includes(w)) ordered.unshift(w)
     }
     for (const w of ['network', 'docker']) {
-      if (!ordered.includes(w)) ordered.push(w)
+      if (!hiddenWidgets.has(w) && !ordered.includes(w)) ordered.push(w)
     }
     for (const s of services) {
+      if (s.hidden) continue
       const key = `service:${s.id}`
       if (!ordered.includes(key)) ordered.push(key)
     }
     return ordered
-  }, [settings.gridOrder, services])
+  }, [settings.gridOrder, settings.hiddenWidgets, services])
 
   const [isMobile, setIsMobile] = useState(() => window.matchMedia('(pointer: coarse)').matches)
   useEffect(() => {
@@ -196,7 +199,7 @@ function Dashboard() {
               return <div key={id} className="h-full">{block}</div>
             })
           ) : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} autoScroll={false}>
               <SortableContext items={gridItems} strategy={rectSortingStrategy}>
                 {gridItems.map(id => {
                   const block = renderBlock(id, services, statuses, statusLoading)

@@ -21,7 +21,7 @@ func NewServicesHandler(db *pgxpool.Pool) *ServicesHandler {
 
 func (h *ServicesHandler) List(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.db.Query(r.Context(),
-		`SELECT id, name, description, url, icon_name, color, sort_order, created_at
+		`SELECT id, name, description, url, icon_name, color, sort_order, hidden, created_at
 		 FROM services ORDER BY sort_order, id`)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -32,7 +32,7 @@ func (h *ServicesHandler) List(w http.ResponseWriter, r *http.Request) {
 	services := []models.Service{}
 	for rows.Next() {
 		var s models.Service
-		if err := rows.Scan(&s.ID, &s.Name, &s.Description, &s.URL, &s.IconName, &s.Color, &s.SortOrder, &s.CreatedAt); err != nil {
+		if err := rows.Scan(&s.ID, &s.Name, &s.Description, &s.URL, &s.IconName, &s.Color, &s.SortOrder, &s.Hidden, &s.CreatedAt); err != nil {
 			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
@@ -51,6 +51,7 @@ func (h *ServicesHandler) Create(w http.ResponseWriter, r *http.Request) {
 		IconName    string `json:"iconName"`
 		Color       string `json:"color"`
 		SortOrder   int    `json:"sortOrder"`
+		Hidden      bool   `json:"hidden"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -63,11 +64,11 @@ func (h *ServicesHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	var s models.Service
 	err := h.db.QueryRow(r.Context(),
-		`INSERT INTO services (name, description, url, icon_name, color, sort_order)
-		 VALUES ($1, $2, $3, $4, $5, $6)
-		 RETURNING id, name, description, url, icon_name, color, sort_order, created_at`,
-		input.Name, input.Description, input.URL, input.IconName, input.Color, input.SortOrder,
-	).Scan(&s.ID, &s.Name, &s.Description, &s.URL, &s.IconName, &s.Color, &s.SortOrder, &s.CreatedAt)
+		`INSERT INTO services (name, description, url, icon_name, color, sort_order, hidden)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7)
+		 RETURNING id, name, description, url, icon_name, color, sort_order, hidden, created_at`,
+		input.Name, input.Description, input.URL, input.IconName, input.Color, input.SortOrder, input.Hidden,
+	).Scan(&s.ID, &s.Name, &s.Description, &s.URL, &s.IconName, &s.Color, &s.SortOrder, &s.Hidden, &s.CreatedAt)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -92,6 +93,7 @@ func (h *ServicesHandler) Update(w http.ResponseWriter, r *http.Request) {
 		IconName    string `json:"iconName"`
 		Color       string `json:"color"`
 		SortOrder   int    `json:"sortOrder"`
+		Hidden      bool   `json:"hidden"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -100,11 +102,11 @@ func (h *ServicesHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	var s models.Service
 	err = h.db.QueryRow(r.Context(),
-		`UPDATE services SET name=$1, description=$2, url=$3, icon_name=$4, color=$5, sort_order=$6
-		 WHERE id=$7
-		 RETURNING id, name, description, url, icon_name, color, sort_order, created_at`,
-		input.Name, input.Description, input.URL, input.IconName, input.Color, input.SortOrder, id,
-	).Scan(&s.ID, &s.Name, &s.Description, &s.URL, &s.IconName, &s.Color, &s.SortOrder, &s.CreatedAt)
+		`UPDATE services SET name=$1, description=$2, url=$3, icon_name=$4, color=$5, sort_order=$6, hidden=$7
+		 WHERE id=$8
+		 RETURNING id, name, description, url, icon_name, color, sort_order, hidden, created_at`,
+		input.Name, input.Description, input.URL, input.IconName, input.Color, input.SortOrder, input.Hidden, id,
+	).Scan(&s.ID, &s.Name, &s.Description, &s.URL, &s.IconName, &s.Color, &s.SortOrder, &s.Hidden, &s.CreatedAt)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return

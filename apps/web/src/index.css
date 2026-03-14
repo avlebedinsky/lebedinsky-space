@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+html, body {
+  overflow-x: hidden;
+}
+
 :root {
   --color-bg: #030712;
   --color-card: #111827;
