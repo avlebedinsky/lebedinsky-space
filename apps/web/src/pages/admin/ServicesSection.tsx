@@ -67,7 +67,7 @@ export function ServicesSection() {
               <>
                 <p className="mb-4 text-sm font-medium text-soft">Редактировать</p>
                 <ServiceForm
-                  initial={{ name: service.name, description: service.description, url: service.url, iconName: service.iconName, color: service.color, sortOrder: service.sortOrder, hidden: service.hidden }}
+                  initial={{ name: service.name, description: service.description, url: service.url, iconName: service.iconName, color: service.color, sortOrder: service.sortOrder, hidden: service.hidden, cardColSpan: service.cardColSpan ?? 1, cardRowSpan: service.cardRowSpan ?? 1 }}
                   onSubmit={data => handleUpdate(service.id, data)}
                   onCancel={() => setEditingId(null)}
                 />

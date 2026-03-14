@@ -32,7 +32,7 @@ import SettingsPage from './pages/SettingsPage'
 import RSSPage from './pages/RSSPage'
 import type { Service, ServiceStatus } from './lib/types'
 
-function SortableItem({ id, children }: { id: string; children: React.ReactNode }) {
+function SortableItem({ id, colSpan, rowSpan, children }: { id: string; colSpan: number; rowSpan: number; children: React.ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
   const didDrag = useRef(false)
 
@@ -51,10 +51,12 @@ function SortableItem({ id, children }: { id: string; children: React.ReactNode 
     <div
       ref={setNodeRef}
       style={{
-        transform: CSS.Transform.toString(transform),
+        transform: CSS.Translate.toString(transform),
         transition,
         opacity: isDragging ? 0.4 : undefined,
         touchAction: 'none',
+        ...(colSpan > 1 ? { gridColumn: `span ${colSpan}` } : {}),
+        ...(rowSpan > 1 ? { gridRow: `span ${rowSpan}` } : {}),
       }}
       {...attributes}
       {...listeners}
@@ -130,6 +132,14 @@ function Dashboard() {
     return () => mq.removeEventListener('change', handler)
   }, [])
 
+  const getGridCols = () => window.innerWidth >= 1024 ? 3 : window.innerWidth >= 640 ? 2 : 1
+  const [gridCols, setGridCols] = useState(getGridCols)
+  useEffect(() => {
+    const handler = () => setGridCols(getGridCols())
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   )
@@ -196,7 +206,13 @@ function Dashboard() {
             gridItems.map(id => {
               const block = renderBlock(id, services, statuses, statusLoading)
               if (!block) return null
-              return <div key={id} className="h-full">{block}</div>
+              const svc = id.startsWith('service:') ? services.find(s => s.id === Number(id.slice(8))) : null
+              const rowSpan = svc ? (svc.cardRowSpan ?? 1) : (settings.widgetSpans?.[id]?.rowSpan ?? 1)
+              return (
+                <div key={id} className="h-full" style={rowSpan > 1 ? { gridRow: `span ${rowSpan}` } : undefined}>
+                  {block}
+                </div>
+              )
             })
           ) : (
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} autoScroll={false}>
@@ -204,8 +220,11 @@ function Dashboard() {
                 {gridItems.map(id => {
                   const block = renderBlock(id, services, statuses, statusLoading)
                   if (!block) return null
+                  const svc = id.startsWith('service:') ? services.find(s => s.id === Number(id.slice(8))) : null
+                  const colSpan = Math.min(svc ? (svc.cardColSpan ?? 1) : (settings.widgetSpans?.[id]?.colSpan ?? 1), gridCols)
+                  const rowSpan = svc ? (svc.cardRowSpan ?? 1) : (settings.widgetSpans?.[id]?.rowSpan ?? 1)
                   return (
-                    <SortableItem key={id} id={id}>
+                    <SortableItem key={id} id={id} colSpan={colSpan} rowSpan={rowSpan}>
                       {block}
                     </SortableItem>
                   )

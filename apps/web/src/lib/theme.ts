@@ -9,6 +9,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   textColor: '#ffffff',
   gridOrder: ['clock', 'weather', 'metrics'],
   hiddenWidgets: [],
+  widgetSpans: {},
 }
 
 export function applyTheme(settings: SiteSettings) {

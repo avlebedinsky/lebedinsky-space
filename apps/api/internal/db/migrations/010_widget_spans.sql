@@ -1,0 +1,1 @@
+ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS widget_spans TEXT NOT NULL DEFAULT '{}';

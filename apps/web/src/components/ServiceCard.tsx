@@ -16,7 +16,7 @@ export function ServiceCard({ service, status }: Props) {
       tabIndex={0}
       onClick={() => window.open(service.url, '_blank', 'noopener,noreferrer')}
       onKeyDown={(e) => e.key === 'Enter' && window.open(service.url, '_blank', 'noopener,noreferrer')}
-      className="group relative flex h-full cursor-pointer flex-col gap-4 rounded-2xl border p-6 transition-all duration-200 hover:scale-[1.02] hover:shadow-xl"
+      className="group relative flex h-full cursor-pointer flex-col justify-center gap-4 rounded-2xl border p-6 transition-all duration-200 hover:scale-[1.02] hover:shadow-xl"
       style={{ backgroundColor: 'var(--color-card)', borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
     >
       <div

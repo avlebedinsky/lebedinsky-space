@@ -7,6 +7,8 @@ export interface Service {
   color: string
   sortOrder: number
   hidden: boolean
+  cardColSpan: number
+  cardRowSpan: number
   createdAt: string
 }
 
@@ -66,4 +68,5 @@ export interface SiteSettings {
   textColor: string
   gridOrder: string[]
   hiddenWidgets: string[]
+  widgetSpans: Record<string, { colSpan: number; rowSpan: number }>
 }

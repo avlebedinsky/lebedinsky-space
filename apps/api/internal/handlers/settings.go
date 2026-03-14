@@ -18,12 +18,12 @@ func NewSettingsHandler(db *pgxpool.Pool) *SettingsHandler {
 }
 
 func (h *SettingsHandler) Get(w http.ResponseWriter, r *http.Request) {
-	var gridOrderRaw, hiddenWidgetsRaw string
+	var gridOrderRaw, hiddenWidgetsRaw, widgetSpansRaw string
 	var s models.SiteSettings
 	err := h.db.QueryRow(r.Context(),
-		`SELECT bg_color, bg_image, card_color, accent_color, border_color, text_color, grid_order, hidden_widgets
+		`SELECT bg_color, bg_image, card_color, accent_color, border_color, text_color, grid_order, hidden_widgets, widget_spans
 		 FROM site_settings WHERE id=1`,
-	).Scan(&s.BgColor, &s.BgImage, &s.CardColor, &s.AccentColor, &s.BorderColor, &s.TextColor, &gridOrderRaw, &hiddenWidgetsRaw)
+	).Scan(&s.BgColor, &s.BgImage, &s.CardColor, &s.AccentColor, &s.BorderColor, &s.TextColor, &gridOrderRaw, &hiddenWidgetsRaw, &widgetSpansRaw)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -34,6 +34,9 @@ func (h *SettingsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.Unmarshal([]byte(hiddenWidgetsRaw), &s.HiddenWidgets); err != nil {
 		s.HiddenWidgets = []string{}
+	}
+	if err := json.Unmarshal([]byte(widgetSpansRaw), &s.WidgetSpans); err != nil {
+		s.WidgetSpans = map[string]models.WidgetSpan{}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -53,6 +56,9 @@ func (h *SettingsHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if input.HiddenWidgets == nil {
 		input.HiddenWidgets = []string{}
 	}
+	if input.WidgetSpans == nil {
+		input.WidgetSpans = map[string]models.WidgetSpan{}
+	}
 
 	gridOrderJSON, err := json.Marshal(input.GridOrder)
 	if err != nil {
@@ -64,16 +70,21 @@ func (h *SettingsHandler) Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
+	widgetSpansJSON, err := json.Marshal(input.WidgetSpans)
+	if err != nil {
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
 
-	var gridOrderRaw, hiddenWidgetsRaw string
+	var gridOrderRaw, hiddenWidgetsRaw, widgetSpansRaw string
 	var s models.SiteSettings
 	err = h.db.QueryRow(r.Context(),
 		`UPDATE site_settings
-		 SET bg_color=$1, bg_image=$2, card_color=$3, accent_color=$4, border_color=$5, text_color=$6, grid_order=$7, hidden_widgets=$8
+		 SET bg_color=$1, bg_image=$2, card_color=$3, accent_color=$4, border_color=$5, text_color=$6, grid_order=$7, hidden_widgets=$8, widget_spans=$9
 		 WHERE id=1
-		 RETURNING bg_color, bg_image, card_color, accent_color, border_color, text_color, grid_order, hidden_widgets`,
-		input.BgColor, input.BgImage, input.CardColor, input.AccentColor, input.BorderColor, input.TextColor, string(gridOrderJSON), string(hiddenWidgetsJSON),
-	).Scan(&s.BgColor, &s.BgImage, &s.CardColor, &s.AccentColor, &s.BorderColor, &s.TextColor, &gridOrderRaw, &hiddenWidgetsRaw)
+		 RETURNING bg_color, bg_image, card_color, accent_color, border_color, text_color, grid_order, hidden_widgets, widget_spans`,
+		input.BgColor, input.BgImage, input.CardColor, input.AccentColor, input.BorderColor, input.TextColor, string(gridOrderJSON), string(hiddenWidgetsJSON), string(widgetSpansJSON),
+	).Scan(&s.BgColor, &s.BgImage, &s.CardColor, &s.AccentColor, &s.BorderColor, &s.TextColor, &gridOrderRaw, &hiddenWidgetsRaw, &widgetSpansRaw)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -84,6 +95,9 @@ func (h *SettingsHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.Unmarshal([]byte(hiddenWidgetsRaw), &s.HiddenWidgets); err != nil {
 		s.HiddenWidgets = []string{}
+	}
+	if err := json.Unmarshal([]byte(widgetSpansRaw), &s.WidgetSpans); err != nil {
+		s.WidgetSpans = map[string]models.WidgetSpan{}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
