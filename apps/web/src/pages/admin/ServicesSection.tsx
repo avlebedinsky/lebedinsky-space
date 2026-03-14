@@ -79,7 +79,7 @@ export function ServicesSection() {
                   <Icon size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`font-medium${service.hidden ? ' text-muted line-through' : ''}`}>{service.name}</p>
+                  <p className={`truncate font-medium${service.hidden ? ' text-muted line-through' : ''}`}>{service.name}</p>
                   <p className="truncate text-sm text-muted">{service.url}</p>
                 </div>
                 <div className="flex gap-1">

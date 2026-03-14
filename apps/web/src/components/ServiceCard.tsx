@@ -28,7 +28,7 @@ export function ServiceCard({ service, status }: Props) {
 
       <div className="min-w-0 flex-1">
         <div className="min-w-0 flex items-center gap-2">
-          <h2 className="truncate text-lg font-semibold">{service.name}</h2>
+          <h2 className="min-w-0 truncate text-lg font-semibold">{service.name}</h2>
           {status && <StatusDot status={status} />}
         </div>
         <p className="mt-1 line-clamp-2 text-sm text-muted">{service.description}</p>

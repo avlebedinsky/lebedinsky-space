@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, ExternalLink, ChevronDown, Rss } from 'lucide-react'
 import { useThemeStore } from '../store/themeStore'
 import { api } from '../lib/api'
+import { ErrorBlock } from '../components/ErrorBlock'
 import type { RSSFeedWithItems } from '../lib/types'
 
 function formatDate(iso: string): string {
@@ -54,7 +55,7 @@ export default function RSSPage() {
             <ArrowLeft size={13} /> <span className="hidden sm:inline">Назад</span>
           </Link>
           <div className="h-5 w-px bg-gray-800" />
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">RSS</h1>
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">RSS</h1>
         </header>
 
         {loading && (
@@ -70,9 +71,7 @@ export default function RSSPage() {
           </div>
         )}
 
-        {error && (
-          <p className="rounded-xl border border-red-900 bg-red-950 px-4 py-3 text-sm text-red-400">{error}</p>
-        )}
+        {error && <ErrorBlock message={error} />}
 
         {!loading && !error && feeds.length === 0 && (
           <p className="text-sm text-muted">Нет RSS-лент. Добавьте их в панели управления.</p>

@@ -35,7 +35,7 @@ export function Select({ value, options, onChange, label }: Props) {
         <button
           type="button"
           onClick={() => setOpen(v => !v)}
-          className="flex w-full items-center justify-between rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm text-soft transition hover:border-gray-600 focus:outline-none focus:border-gray-600"
+          className="flex w-full items-center justify-between rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-soft transition hover:border-gray-600 focus:outline-none focus:border-gray-600"
         >
           <span>{selected?.label ?? value}</span>
           <ChevronDown

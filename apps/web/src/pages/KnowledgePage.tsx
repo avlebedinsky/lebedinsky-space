@@ -9,10 +9,8 @@ import {
   FolderOpen,
   Search,
   X,
-  AlertTriangle,
-  KeyRound,
-  FolderX,
 } from 'lucide-react'
+import { ErrorBlock } from '../components/ErrorBlock'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
@@ -20,41 +18,6 @@ import 'highlight.js/styles/github-dark.css'
 import { useThemeStore } from '../store/themeStore'
 import { api } from '../lib/api'
 import type { KBNode } from '../lib/types'
-
-function ErrorBlock({ message }: { message: string }) {
-  const isAuth =
-    message.includes('токен') ||
-    message.includes('token') ||
-    message.includes('Unauthorized') ||
-    message.includes('запрещён') ||
-    message.includes('права')
-  const isNotFound = message.includes('не найден') || message.includes('Not Found')
-  const Icon = isAuth ? KeyRound : isNotFound ? FolderX : AlertTriangle
-  return (
-    <div className="flex flex-col gap-2 rounded-xl border border-gray-800 bg-gray-900 p-4">
-      <div className="flex items-center gap-2 text-amber-400">
-        <Icon size={15} className="shrink-0" />
-        <span className="text-sm font-medium">
-          {isAuth ? 'Ошибка доступа' : isNotFound ? 'Репозиторий не найден' : 'Ошибка GitHub'}
-        </span>
-      </div>
-      <p className="text-xs text-dim">{message}</p>
-      {(isAuth || isNotFound) && (
-        <p className="text-xs text-subtle">
-          Проверь настройки в{' '}
-          <Link
-            to="/admin"
-            className="underline underline-offset-2 transition hover:opacity-80"
-            style={{ color: 'var(--color-accent)' }}
-          >
-            Управлении
-          </Link>
-          .
-        </p>
-      )}
-    </div>
-  )
-}
 
 function matchesSearch(node: KBNode, query: string): boolean {
   if (node.type === 'file') return node.name.toLowerCase().includes(query)
@@ -209,13 +172,14 @@ export default function KnowledgePage() {
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col min-h-0">
 
         <header className="shrink-0 py-6 flex items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-3">
+          <div className="flex min-w-0 items-center gap-4">
             <Link
               to="/"
               className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim cursor-pointer transition hover:border-gray-600 hover:text-medium"
             >
               <ArrowLeft size={13} /> <span className="hidden sm:inline">Назад</span>
             </Link>
+            <div className="h-5 w-px shrink-0 bg-gray-800" />
             <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl">База знаний</h1>
           </div>
 

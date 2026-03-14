@@ -14,7 +14,7 @@ export function ColorPicker({ label, value, onChange }: Props) {
     <label className="flex flex-col gap-2">
       <span className="text-xs text-dim">{label}</span>
       <div
-        className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 transition hover:border-gray-700"
+        className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 transition hover:border-gray-600"
         onClick={() => inputRef.current?.click()}
       >
         <div className="size-6 rounded-md border border-gray-700 shadow-sm" style={{ backgroundColor: hex }} />

@@ -87,7 +87,7 @@ export function RSSSection() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium uppercase tracking-widest text-subtle">RSS-ленты</p>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-subtle">RSS-ленты</h2>
         {!showAdd && (
           <button
             onClick={() => setShowAdd(true)}
@@ -106,12 +106,12 @@ export function RSSSection() {
             <label className="flex flex-col gap-1">
               <span className="text-xs text-dim">Название *</span>
               <input required value={title} onChange={e => setTitle(e.target.value)}
-                className="rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm outline-none focus:border-gray-600" />
+                className="rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-sm outline-none transition focus:border-gray-600" />
             </label>
             <label className="flex flex-col gap-1">
               <span className="text-xs text-dim">URL *</span>
               <input required type="url" value={url} onChange={e => setUrl(e.target.value)}
-                className="rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm outline-none focus:border-gray-600" />
+                className="rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-sm outline-none transition focus:border-gray-600" />
             </label>
             <div className="flex gap-2 justify-end">
               <button type="button" onClick={() => { setShowAdd(false); setError(null) }}
@@ -146,12 +146,12 @@ export function RSSSection() {
                 <label className="flex flex-col gap-1">
                   <span className="text-xs text-dim">Название *</span>
                   <input required value={editTitle} onChange={e => setEditTitle(e.target.value)}
-                    className="rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm outline-none focus:border-gray-600" />
+                    className="rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-sm outline-none transition focus:border-gray-600" />
                 </label>
                 <label className="flex flex-col gap-1">
                   <span className="text-xs text-dim">URL *</span>
                   <input required type="url" value={editUrl} onChange={e => setEditUrl(e.target.value)}
-                    className="rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm outline-none focus:border-gray-600" />
+                    className="rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-sm outline-none transition focus:border-gray-600" />
                 </label>
                 <div className="flex gap-2 justify-end">
                   <button type="button" onClick={handleCancelEdit}

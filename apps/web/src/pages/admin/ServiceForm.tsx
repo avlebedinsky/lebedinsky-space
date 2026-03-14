@@ -40,19 +40,19 @@ export function ServiceForm({
       <label className="flex flex-col gap-1">
         <span className="text-xs text-dim">Название *</span>
         <input required value={form.name} onChange={e => set('name', e.target.value)}
-          className="rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm outline-none focus:border-gray-600" />
+          className="rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-sm outline-none transition focus:border-gray-600" />
       </label>
 
       <label className="flex flex-col gap-1">
         <span className="text-xs text-dim">Описание</span>
         <input value={form.description} onChange={e => set('description', e.target.value)}
-          className="rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm outline-none focus:border-gray-600" />
+          className="rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-sm outline-none transition focus:border-gray-600" />
       </label>
 
       <label className="flex flex-col gap-1">
         <span className="text-xs text-dim">URL *</span>
         <input required value={form.url} onChange={e => set('url', e.target.value)}
-          className="rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-sm outline-none focus:border-gray-600" />
+          className="rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-sm outline-none transition focus:border-gray-600" />
       </label>
 
       <label className="flex flex-col gap-1">
