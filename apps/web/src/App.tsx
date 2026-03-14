@@ -158,12 +158,12 @@ function Dashboard() {
     : { backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }
 
   return (
-    <div className="min-h-screen overflow-x-hidden px-4 py-16" style={bgStyle}>
-      <div className="mx-auto max-w-4xl">
+    <div className="min-h-screen overflow-x-hidden px-4 py-8" style={bgStyle}>
+      <div className="mx-auto max-w-6xl">
         <header className="mb-10 flex items-center justify-between gap-4">
           <h1 className="flex min-w-0 items-center gap-3 text-2xl font-semibold tracking-tight sm:text-3xl">
             <img src="/favicon.svg" alt="logo" className="size-8 sm:size-9" />
-            <span>lebedinsky<span style={{ color: 'var(--color-accent)' }}>.space</span></span>
+            <span className="hidden sm:inline">lebedinsky<span style={{ color: 'var(--color-accent)' }}>.space</span></span>
           </h1>
           <div className="flex items-center gap-2">
             <Link

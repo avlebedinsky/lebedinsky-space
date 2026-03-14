@@ -12,7 +12,7 @@ const config = {
 export function StatusDot({ status }: Props) {
   return (
     <span
-      className={`size-2 rounded-full ${config[status]}`}
+      className={`size-2 shrink-0 rounded-full ${config[status]}`}
       title={status}
     />
   )

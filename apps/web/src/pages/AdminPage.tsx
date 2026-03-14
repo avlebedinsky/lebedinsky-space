@@ -27,7 +27,7 @@ export default function AdminPage() {
               to="/"
               className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim cursor-pointer transition hover:border-gray-600 hover:text-medium"
             >
-              <ArrowLeft size={13} /> Назад
+              <ArrowLeft size={13} /> <span className="hidden sm:inline">Назад</span>
             </Link>
             <div className="h-5 w-px bg-gray-800" />
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Управление</h1>

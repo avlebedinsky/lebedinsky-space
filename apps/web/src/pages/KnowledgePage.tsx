@@ -209,35 +209,30 @@ export default function KnowledgePage() {
       <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col min-h-0">
 
         <header className="shrink-0 py-6 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-3">
             <Link
               to="/"
               className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim cursor-pointer transition hover:border-gray-600 hover:text-medium"
             >
-              <ArrowLeft size={13} /> Назад
+              <ArrowLeft size={13} /> <span className="hidden sm:inline">Назад</span>
             </Link>
-            <div className="h-5 w-px bg-gray-800" />
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">База знаний</h1>
+            <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl">База знаний</h1>
           </div>
 
           {selectedPath && (
-            <div className="flex items-center gap-1 md:hidden">
+            <div className="flex items-center rounded-xl border border-gray-700 bg-gray-900 p-0.5 md:hidden">
               <button
                 onClick={() => setMobilePanel('tree')}
-                className={`rounded-xl border px-3 py-2 text-xs transition ${
-                  mobilePanel === 'tree'
-                    ? 'border-gray-600 bg-gray-800 text-medium'
-                    : 'border-gray-700 bg-gray-800 text-dim hover:border-gray-600 hover:text-medium'
+                className={`rounded-lg px-3 py-1.5 text-xs transition ${
+                  mobilePanel === 'tree' ? 'bg-gray-700 text-medium' : 'text-dim hover:text-soft'
                 }`}
               >
                 Файлы
               </button>
               <button
                 onClick={() => setMobilePanel('reader')}
-                className={`rounded-xl border px-3 py-2 text-xs transition ${
-                  mobilePanel === 'reader'
-                    ? 'border-gray-600 bg-gray-800 text-medium'
-                    : 'border-gray-700 bg-gray-800 text-dim hover:border-gray-600 hover:text-medium'
+                className={`rounded-lg px-3 py-1.5 text-xs transition ${
+                  mobilePanel === 'reader' ? 'bg-gray-700 text-medium' : 'text-dim hover:text-soft'
                 }`}
               >
                 Заметка
@@ -317,13 +312,7 @@ export default function KnowledgePage() {
               </div>
             ) : (
               <>
-                <div className="shrink-0 border-b border-gray-800 px-5 py-3 flex items-center gap-3">
-                  <button
-                    onClick={() => setMobilePanel('tree')}
-                    className="flex items-center gap-1 text-xs text-dim md:hidden hover:text-soft transition"
-                  >
-                    <ArrowLeft size={12} /> Файлы
-                  </button>
+                <div className="shrink-0 border-b border-gray-800 px-5 py-3">
                   <Breadcrumb path={selectedPath} />
                 </div>
 
