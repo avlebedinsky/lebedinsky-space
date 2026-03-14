@@ -34,7 +34,7 @@ func NewRSSHandler(db *pgxpool.Pool) *RSSHandler {
 }
 
 func (h *RSSHandler) ListFeeds(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.db.Query(r.Context(), `SELECT id, title, url, created_at FROM rss_feeds ORDER BY created_at ASC`)
+	rows, err := h.db.Query(r.Context(), `SELECT id, title, url, hidden, created_at FROM rss_feeds ORDER BY created_at ASC`)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -44,7 +44,7 @@ func (h *RSSHandler) ListFeeds(w http.ResponseWriter, r *http.Request) {
 	feeds := make([]models.RSSFeed, 0)
 	for rows.Next() {
 		var f models.RSSFeed
-		if err := rows.Scan(&f.ID, &f.Title, &f.URL, &f.CreatedAt); err != nil {
+		if err := rows.Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.CreatedAt); err != nil {
 			continue
 		}
 		feeds = append(feeds, f)
@@ -66,9 +66,9 @@ func (h *RSSHandler) CreateFeed(w http.ResponseWriter, r *http.Request) {
 
 	var f models.RSSFeed
 	err := h.db.QueryRow(r.Context(),
-		`INSERT INTO rss_feeds (title, url) VALUES ($1, $2) RETURNING id, title, url, created_at`,
+		`INSERT INTO rss_feeds (title, url) VALUES ($1, $2) RETURNING id, title, url, hidden, created_at`,
 		body.Title, body.URL,
-	).Scan(&f.ID, &f.Title, &f.URL, &f.CreatedAt)
+	).Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.CreatedAt)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -80,6 +80,36 @@ func (h *RSSHandler) CreateFeed(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(f)
+}
+
+func (h *RSSHandler) UpdateFeed(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	var body struct {
+		Title  string `json:"title"`
+		URL    string `json:"url"`
+		Hidden bool   `json:"hidden"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Title == "" || body.URL == "" {
+		http.Error(w, "Invalid body", http.StatusBadRequest)
+		return
+	}
+
+	var f models.RSSFeed
+	err := h.db.QueryRow(r.Context(),
+		`UPDATE rss_feeds SET title = $1, url = $2, hidden = $3 WHERE id = $4 RETURNING id, title, url, hidden, created_at`,
+		body.Title, body.URL, body.Hidden, id,
+	).Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.CreatedAt)
+	if err != nil {
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+
+	h.mu.Lock()
+	h.cache = nil
+	h.mu.Unlock()
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(f)
 }
 
@@ -109,7 +139,7 @@ func (h *RSSHandler) FetchItems(w http.ResponseWriter, r *http.Request) {
 	}
 	h.mu.Unlock()
 
-	rows, err := h.db.Query(r.Context(), `SELECT id, title, url, created_at FROM rss_feeds ORDER BY created_at ASC`)
+	rows, err := h.db.Query(r.Context(), `SELECT id, title, url, hidden, created_at FROM rss_feeds WHERE hidden = FALSE ORDER BY created_at ASC`)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -119,7 +149,7 @@ func (h *RSSHandler) FetchItems(w http.ResponseWriter, r *http.Request) {
 	var feeds []models.RSSFeed
 	for rows.Next() {
 		var f models.RSSFeed
-		if err := rows.Scan(&f.ID, &f.Title, &f.URL, &f.CreatedAt); err != nil {
+		if err := rows.Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.CreatedAt); err != nil {
 			continue
 		}
 		feeds = append(feeds, f)

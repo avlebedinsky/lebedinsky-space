@@ -36,7 +36,7 @@ export function WidgetsSection() {
         const hidden = hiddenWidgets.includes(id)
         const span = widgetSpans[id] ?? { colSpan: 1, rowSpan: 1 }
         return (
-          <div key={id} className="rounded-2xl border border-gray-800 bg-gray-900 p-4">
+          <div key={id} className="rounded-2xl border border-gray-800 bg-gray-900 px-4 py-2.5">
             {editingId === id ? (
               <>
                 <p className="mb-4 text-sm font-medium text-soft">{label}</p>

@@ -59,6 +59,7 @@ func main() {
 
 	r.Get("/rss/feeds", rss.ListFeeds)
 	r.Post("/rss/feeds", middleware.RequireAdmin(http.HandlerFunc(rss.CreateFeed)).ServeHTTP)
+	r.Put("/rss/feeds/{id}", middleware.RequireAdmin(http.HandlerFunc(rss.UpdateFeed)).ServeHTTP)
 	r.Delete("/rss/feeds/{id}", middleware.RequireAdmin(http.HandlerFunc(rss.DeleteFeed)).ServeHTTP)
 	r.Get("/rss/items", rss.FetchItems)
 

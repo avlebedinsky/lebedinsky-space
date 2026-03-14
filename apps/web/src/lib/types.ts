@@ -44,6 +44,7 @@ export interface RSSFeed {
   id: number
   title: string
   url: string
+  hidden: boolean
   createdAt: string
 }
 

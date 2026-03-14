@@ -87,7 +87,7 @@ export default function RSSPage() {
                 <section key={feed.id} className="rounded-2xl border border-gray-800 bg-gray-900">
                   <button
                     onClick={() => toggleCollapsed(feed.id)}
-                    className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-gray-800/40 rounded-2xl"
+                    className={`flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition rounded-2xl${isCollapsed ? ' hover:bg-gray-800/40' : ''}`}
                   >
                     <ChevronDown
                       size={13}

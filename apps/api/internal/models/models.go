@@ -48,6 +48,7 @@ type RSSFeed struct {
 	ID        int64     `json:"id"`
 	Title     string    `json:"title"`
 	URL       string    `json:"url"`
+	Hidden    bool      `json:"hidden"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
