@@ -35,6 +35,7 @@ func main() {
 	status := handlers.NewStatusHandler(pool)
 	settings := handlers.NewSettingsHandler(pool)
 	rss := handlers.NewRSSHandler(pool)
+	kb := handlers.NewKnowledgeHandler(pool)
 
 	r := chi.NewRouter()
 	r.Use(chiMiddleware.Logger)
@@ -62,6 +63,9 @@ func main() {
 	r.Put("/rss/feeds/{id}", middleware.RequireAdmin(http.HandlerFunc(rss.UpdateFeed)).ServeHTTP)
 	r.Delete("/rss/feeds/{id}", middleware.RequireAdmin(http.HandlerFunc(rss.DeleteFeed)).ServeHTTP)
 	r.Get("/rss/items", rss.FetchItems)
+
+	r.Get("/knowledge/tree", kb.GetTree)
+	r.Get("/knowledge/file", kb.GetFile)
 
 	log.Printf("Starting on :%s (env=%s)", cfg.Port, cfg.Environment)
 	if err := http.ListenAndServe(":"+cfg.Port, r); err != nil {

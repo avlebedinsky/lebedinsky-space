@@ -5,6 +5,7 @@ import { useThemeStore } from '../store/themeStore'
 import { WidgetsSection } from './admin/WidgetsSection'
 import { ServicesSection } from './admin/ServicesSection'
 import { RSSSection } from './admin/RSSSection'
+import { KnowledgeSection } from './admin/KnowledgeSection'
 
 export default function AdminPage() {
   const { user, loading: userLoading } = useUserStore()
@@ -18,9 +19,9 @@ export default function AdminPage() {
     : { backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }
 
   return (
-    <div className="min-h-screen px-4 py-16" style={bgStyle}>
-      <div className="mx-auto max-w-4xl">
-        <header className="mb-10 flex items-center justify-between gap-4">
+    <div className="min-h-screen px-4 py-8" style={bgStyle}>
+      <div className="mx-auto max-w-6xl">
+        <header className="mb-8 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link
               to="/"
@@ -35,6 +36,7 @@ export default function AdminPage() {
 
         <div className="flex flex-col gap-10">
           <WidgetsSection />
+          <KnowledgeSection />
           <ServicesSection />
           <RSSSection />
         </div>

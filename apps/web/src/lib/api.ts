@@ -1,4 +1,4 @@
-import type { Service, User, ServiceStatus, ServerMetrics, SiteSettings, ContainerInfo, RSSFeed, RSSFeedWithItems } from './types'
+import type { Service, User, ServiceStatus, ServerMetrics, SiteSettings, ContainerInfo, RSSFeed, RSSFeedWithItems, KBNode, KBFileContent } from './types'
 
 const BASE = '/api'
 
@@ -52,5 +52,10 @@ export const api = {
         request(`/rss/feeds/${id}`, { method: 'DELETE' }),
     },
     items: (): Promise<RSSFeedWithItems[]> => request('/rss/items'),
+  },
+
+  knowledge: {
+    tree: (): Promise<KBNode[]> => request('/knowledge/tree'),
+    file: (path: string): Promise<KBFileContent> => request(`/knowledge/file?path=${encodeURIComponent(path)}`),
   },
 }

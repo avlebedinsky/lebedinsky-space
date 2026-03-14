@@ -70,4 +70,19 @@ export interface SiteSettings {
   gridOrder: string[]
   hiddenWidgets: string[]
   widgetSpans: Record<string, { colSpan: number; rowSpan: number }>
+  kbRepoURL: string
+  kbGithubToken: string
+  kbAllowedFolders: string[]
+}
+
+export interface KBNode {
+  name: string
+  path: string
+  type: 'file' | 'dir'
+  children?: KBNode[]
+}
+
+export interface KBFileContent {
+  path: string
+  content: string
 }

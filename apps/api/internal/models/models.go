@@ -70,13 +70,28 @@ type WidgetSpan struct {
 }
 
 type SiteSettings struct {
-	BgColor       string                 `json:"bgColor"`
-	BgImage       string                 `json:"bgImage"`
-	CardColor     string                 `json:"cardColor"`
-	AccentColor   string                 `json:"accentColor"`
-	BorderColor   string                 `json:"borderColor"`
-	TextColor     string                 `json:"textColor"`
-	GridOrder     []string               `json:"gridOrder"`
-	HiddenWidgets []string               `json:"hiddenWidgets"`
-	WidgetSpans   map[string]WidgetSpan  `json:"widgetSpans"`
+	BgColor        string                 `json:"bgColor"`
+	BgImage        string                 `json:"bgImage"`
+	CardColor      string                 `json:"cardColor"`
+	AccentColor    string                 `json:"accentColor"`
+	BorderColor    string                 `json:"borderColor"`
+	TextColor      string                 `json:"textColor"`
+	GridOrder      []string               `json:"gridOrder"`
+	HiddenWidgets  []string               `json:"hiddenWidgets"`
+	WidgetSpans    map[string]WidgetSpan  `json:"widgetSpans"`
+	KBRepoURL        string                 `json:"kbRepoURL"`
+	KBGithubToken    string                 `json:"kbGithubToken"`
+	KBAllowedFolders []string               `json:"kbAllowedFolders"`
+}
+
+type KBNode struct {
+	Name     string   `json:"name"`
+	Path     string   `json:"path"`
+	Type     string   `json:"type"`
+	Children []KBNode `json:"children,omitempty"`
+}
+
+type KBFileContent struct {
+	Path    string `json:"path"`
+	Content string `json:"content"`
 }

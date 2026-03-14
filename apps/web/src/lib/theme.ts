@@ -10,6 +10,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   gridOrder: ['clock', 'weather', 'metrics'],
   hiddenWidgets: [],
   widgetSpans: {},
+  kbRepoURL: '',
+  kbGithubToken: '',
+  kbAllowedFolders: [],
 }
 
 export function applyTheme(settings: SiteSettings) {

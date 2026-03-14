@@ -1,6 +1,6 @@
 import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
-import { Settings, Palette, Rss } from 'lucide-react'
+import { Settings, Palette, Rss, BookOpen } from 'lucide-react'
 import {
   DndContext,
   closestCenter,
@@ -30,6 +30,7 @@ import { DockerWidget } from './components/widgets/DockerWidget'
 import AdminPage from './pages/AdminPage'
 import SettingsPage from './pages/SettingsPage'
 import RSSPage from './pages/RSSPage'
+import KnowledgePage from './pages/KnowledgePage'
 import type { Service, ServiceStatus } from './lib/types'
 
 function SortableItem({ id, colSpan, rowSpan, children }: { id: string; colSpan: number; rowSpan: number; children: React.ReactNode }) {
@@ -171,6 +172,12 @@ function Dashboard() {
             >
               <Rss size={13} /> <span className="hidden sm:inline">RSS</span>
             </Link>
+            <Link
+              to="/knowledge"
+              className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim transition hover:border-gray-600 hover:text-medium"
+            >
+              <BookOpen size={13} /> <span className="hidden sm:inline">База знаний</span>
+            </Link>
             {user?.isAdmin && (
               <>
                 <Link
@@ -253,6 +260,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Dashboard />} />
       <Route path="/rss" element={<RSSPage />} />
+      <Route path="/knowledge" element={<KnowledgePage />} />
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/settings" element={<SettingsPage />} />
     </Routes>

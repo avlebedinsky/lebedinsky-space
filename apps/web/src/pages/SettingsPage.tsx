@@ -56,9 +56,9 @@ export default function SettingsPage() {
     : { backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }
 
   return (
-    <div className="min-h-screen px-4 py-16" style={bgStyle}>
-      <div className="mx-auto max-w-4xl">
-        <header className="mb-10 flex items-center gap-4">
+    <div className="min-h-screen px-4 py-8" style={bgStyle}>
+      <div className="mx-auto max-w-6xl">
+        <header className="mb-8 flex items-center gap-4">
           <Link
             to="/"
             className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim cursor-pointer transition hover:border-gray-600 hover:text-medium"
