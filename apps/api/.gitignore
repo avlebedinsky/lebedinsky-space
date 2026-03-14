@@ -1,0 +1,6 @@
+coverage.out
+coverage_*.out
+coverage/
+coverage_*/
+coverage
+coverage_*

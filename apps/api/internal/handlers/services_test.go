@@ -52,7 +52,6 @@ func TestServices_Create_And_List(t *testing.T) {
 	assert.Equal(t, "Test Service", created.Name)
 	assert.Equal(t, "https://example.com", created.URL)
 
-	// List должен вернуть созданный сервис
 	req2 := withUser(httptest.NewRequest(http.MethodGet, "/services", nil), "lav", false)
 	rec2 := httptest.NewRecorder()
 	h.List(rec2, req2)
@@ -81,7 +80,6 @@ func TestServices_Delete(t *testing.T) {
 
 	h := handlers.NewServicesHandler(testPool)
 
-	// создаём сервис
 	body, _ := json.Marshal(map[string]any{"name": "ToDelete", "url": "https://x.com", "iconName": "X", "color": "#000"})
 	req := withUser(httptest.NewRequest(http.MethodPost, "/services", bytes.NewReader(body)), "lav", true)
 	rec := httptest.NewRecorder()
@@ -89,11 +87,85 @@ func TestServices_Delete(t *testing.T) {
 	var created models.Service
 	json.NewDecoder(rec.Body).Decode(&created)
 
-	// удаляем через chi URL param
 	req2 := withUser(httptest.NewRequest(http.MethodDelete, "/services/"+itoa(created.ID), nil), "lav", true)
 	req2 = setURLParam(req2, "id", itoa(created.ID))
 	rec2 := httptest.NewRecorder()
 	h.Delete(rec2, req2)
 
 	assert.Equal(t, http.StatusNoContent, rec2.Code)
+}
+
+func TestServices_Update(t *testing.T) {
+	skipIfNoDB(t)
+	testPool.Exec(context.Background(), "DELETE FROM services")
+
+	h := handlers.NewServicesHandler(testPool)
+
+	body, _ := json.Marshal(map[string]any{"name": "Original", "url": "https://orig.com", "iconName": "Globe", "color": "#fff"})
+	req := withUser(httptest.NewRequest(http.MethodPost, "/services", bytes.NewReader(body)), "lav", true)
+	rec := httptest.NewRecorder()
+	h.Create(rec, req)
+	var created models.Service
+	json.NewDecoder(rec.Body).Decode(&created)
+
+	upd, _ := json.Marshal(map[string]any{"name": "Updated", "url": "https://updated.com", "iconName": "Globe", "color": "#000"})
+	req2 := withUser(httptest.NewRequest(http.MethodPut, "/services/"+itoa(created.ID), bytes.NewReader(upd)), "lav", true)
+	req2 = setURLParam(req2, "id", itoa(created.ID))
+	rec2 := httptest.NewRecorder()
+	h.Update(rec2, req2)
+
+	assert.Equal(t, http.StatusOK, rec2.Code)
+	var updated models.Service
+	require.NoError(t, json.NewDecoder(rec2.Body).Decode(&updated))
+	assert.Equal(t, "Updated", updated.Name)
+	assert.Equal(t, "https://updated.com", updated.URL)
+}
+
+func TestServices_Update_InvalidID_Returns400(t *testing.T) {
+	h := handlers.NewServicesHandler(nil)
+	req := withUser(httptest.NewRequest(http.MethodPut, "/services/notanid", nil), "lav", true)
+	req = setURLParam(req, "id", "notanid")
+	rec := httptest.NewRecorder()
+	h.Update(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestServices_Delete_InvalidID_Returns400(t *testing.T) {
+	h := handlers.NewServicesHandler(nil)
+	req := withUser(httptest.NewRequest(http.MethodDelete, "/services/notanid", nil), "lav", true)
+	req = setURLParam(req, "id", "notanid")
+	rec := httptest.NewRecorder()
+	h.Delete(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestServices_Create_MissingURL_Returns400(t *testing.T) {
+	h := handlers.NewServicesHandler(nil)
+	body, _ := json.Marshal(map[string]any{"name": "NoURL"})
+	req := withUser(httptest.NewRequest(http.MethodPost, "/services", bytes.NewReader(body)), "lav", true)
+	rec := httptest.NewRecorder()
+	h.Create(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestServices_Create_InvalidJSON_Returns400(t *testing.T) {
+	h := handlers.NewServicesHandler(nil)
+	req := withUser(httptest.NewRequest(http.MethodPost, "/services", bytes.NewReader([]byte("not json"))), "lav", true)
+	rec := httptest.NewRecorder()
+	h.Create(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestServices_Update_InvalidJSON_Returns400(t *testing.T) {
+	h := handlers.NewServicesHandler(nil)
+	req := withUser(httptest.NewRequest(http.MethodPut, "/services/1", bytes.NewReader([]byte("not json"))), "lav", true)
+	req = setURLParam(req, "id", "1")
+	rec := httptest.NewRecorder()
+	h.Update(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
