@@ -84,7 +84,7 @@ export function ServicesSection() {
                 </div>
                 <div className="flex gap-1">
                   <button
-                    onClick={() => update(service.id, { name: service.name, description: service.description, url: service.url, iconName: service.iconName, color: service.color, sortOrder: service.sortOrder, hidden: !service.hidden })}
+                    onClick={() => update(service.id, { name: service.name, description: service.description, url: service.url, iconName: service.iconName, color: service.color, sortOrder: service.sortOrder, hidden: !service.hidden, cardColSpan: service.cardColSpan, cardRowSpan: service.cardRowSpan })}
                     title={service.hidden ? 'Показать' : 'Скрыть'}
                     className="flex size-8 items-center justify-center rounded-lg text-subtle cursor-pointer transition hover:bg-gray-800 hover:text-medium">
                     {service.hidden ? <EyeOff size={14} /> : <Eye size={14} />}
