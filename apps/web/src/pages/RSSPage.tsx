@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ExternalLink, ChevronDown } from 'lucide-react'
+import { ArrowLeft, ExternalLink, ChevronDown, Rss } from 'lucide-react'
 import { useThemeStore } from '../store/themeStore'
 import { api } from '../lib/api'
 import type { RSSFeedWithItems } from '../lib/types'
@@ -83,35 +83,36 @@ export default function RSSPage() {
             {feeds.map(({ feed, items }) => {
               const isCollapsed = collapsed.has(feed.id)
               return (
-                <section key={feed.id} className="rounded-2xl border border-gray-800 bg-gray-900">
+                <section key={feed.id} className="overflow-hidden rounded-2xl border border-gray-800 bg-gray-900">
                   <button
                     onClick={() => toggleCollapsed(feed.id)}
-                    className={`flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition rounded-2xl${isCollapsed ? ' hover:bg-gray-800/40' : ''}`}
+                    className="flex w-full cursor-pointer items-center gap-3 px-5 py-4 text-left transition hover:bg-gray-800/50"
                   >
-                    <ChevronDown
-                      size={13}
-                      className="shrink-0 text-subtle transition-transform duration-200"
-                      style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}
-                    />
-                    <span className="flex-1 text-sm font-semibold tracking-wide">{feed.title}</span>
-                    <span className="rounded-md bg-gray-800 px-2 py-0.5 text-xs tabular-nums text-muted">
+                    <Rss size={14} className="shrink-0 text-[var(--color-accent)]" />
+                    <span className="flex-1 text-sm font-semibold">{feed.title}</span>
+                    <span className="rounded-full bg-gray-800 px-2.5 py-0.5 text-xs tabular-nums text-muted">
                       {items.length}
                     </span>
                     <a
                       href={feed.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-subtle transition hover:text-medium"
+                      className="rounded-md p-1 text-subtle transition hover:bg-gray-700 hover:text-medium"
                       onClick={e => e.stopPropagation()}
                     >
                       <ExternalLink size={12} />
                     </a>
+                    <ChevronDown
+                      size={14}
+                      className="shrink-0 text-subtle transition-transform duration-200"
+                      style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}
+                    />
                   </button>
 
                   {!isCollapsed && (
-                    <div className="flex flex-col gap-px border-t border-gray-800">
+                    <div className="border-t border-gray-800">
                       {items.length === 0 ? (
-                        <p className="px-4 py-3 text-sm text-muted">Нет записей</p>
+                        <p className="px-5 py-4 text-sm text-muted">Нет записей</p>
                       ) : (
                         items.map((item, i) => {
                           const desc = stripHtml(item.description)
@@ -121,16 +122,21 @@ export default function RSSPage() {
                               href={item.link}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="group flex flex-col gap-1 px-4 py-3 transition hover:bg-gray-800/50 last:rounded-b-2xl"
+                              className="group relative flex flex-col gap-1.5 px-5 py-4 transition hover:bg-gray-800/40"
                             >
-                              <div className="flex items-start justify-between gap-3">
-                                <span className="font-medium leading-snug group-hover:underline">{item.title}</span>
+                              <span
+                                className="absolute inset-y-0 left-0 w-0.5 scale-y-0 rounded-full bg-[var(--color-accent)] transition-transform duration-150 group-hover:scale-y-100"
+                              />
+                              <div className="flex items-start justify-between gap-4">
+                                <span className="text-sm font-medium leading-snug transition-colors group-hover:text-[var(--color-accent)]">{item.title}</span>
                                 {item.published && (
-                                  <span className="shrink-0 text-xs text-muted">{formatDate(item.published)}</span>
+                                  <span className="mt-0.5 shrink-0 rounded-full bg-gray-800 px-2 py-0.5 text-xs tabular-nums text-muted">
+                                    {formatDate(item.published)}
+                                  </span>
                                 )}
                               </div>
                               {desc && (
-                                <p className="line-clamp-2 text-sm text-muted">{desc}</p>
+                                <p className="line-clamp-2 text-xs leading-relaxed text-muted">{desc}</p>
                               )}
                             </a>
                           )
