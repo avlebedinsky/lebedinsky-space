@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ExternalLink, ChevronDown, Rss } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Rss, Search, X } from 'lucide-react'
 import { useThemeStore } from '../store/themeStore'
 import { api } from '../lib/api'
 import { ErrorBlock } from '../components/ErrorBlock'
@@ -9,7 +9,7 @@ import type { RSSFeedWithItems } from '../lib/types'
 function formatDate(iso: string): string {
   if (!iso) return ''
   const d = new Date(iso)
-  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }).replace(' г.', '')
 }
 
 function stripHtml(html: string): string {
@@ -21,33 +21,44 @@ export default function RSSPage() {
   const [feeds, setFeeds] = useState<RSSFeedWithItems[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [collapsed, setCollapsed] = useState<Set<number>>(new Set())
+  const [query, setQuery] = useState('')
 
   useEffect(() => {
     api.rss.items()
-      .then(data => {
-        setFeeds(data)
-      })
+      .then(data => setFeeds(data))
       .catch(() => setError('Не удалось загрузить ленты'))
       .finally(() => setLoading(false))
   }, [])
 
-  const toggleCollapsed = (id: number) =>
-    setCollapsed(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+  const allItems = useMemo(() => {
+    return feeds
+      .flatMap(({ feed, items }) => items.map(item => ({ ...item, feedTitle: feed.title, feedUrl: feed.url })))
+      .sort((a, b) => {
+        if (!a.published && !b.published) return 0
+        if (!a.published) return 1
+        if (!b.published) return -1
+        return new Date(b.published).getTime() - new Date(a.published).getTime()
+      })
+  }, [feeds])
+
+  const filteredItems = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return allItems
+    return allItems.filter(item =>
+      item.title.toLowerCase().includes(q) ||
+      stripHtml(item.description).toLowerCase().includes(q) ||
+      item.feedTitle.toLowerCase().includes(q)
+    )
+  }, [allItems, query])
 
   const bgStyle = settings.bgImage
     ? { backgroundImage: `url(${settings.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center', color: 'var(--color-text)' }
     : { backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }
 
   return (
-    <div className="min-h-screen px-4 py-8" style={bgStyle}>
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex items-center gap-4">
+    <div className="flex h-screen flex-col overflow-hidden px-4" style={bgStyle}>
+      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col min-h-0">
+        <header className="shrink-0 py-6 flex items-center gap-4">
           <Link
             to="/"
             className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim cursor-pointer transition hover:border-gray-600 hover:text-medium"
@@ -56,94 +67,90 @@ export default function RSSPage() {
           </Link>
           <div className="h-5 w-px bg-gray-800" />
           <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">RSS</h1>
+          {!loading && !error && (
+            <span className="ml-auto rounded-full bg-gray-800 px-3 py-1 text-xs tabular-nums text-muted">
+              {query ? `${filteredItems.length} / ${allItems.length}` : allItems.length}
+            </span>
+          )}
         </header>
 
+        {!loading && !error && allItems.length > 0 && (
+          <div className="relative mb-5">
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle pointer-events-none" />
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Поиск по заголовку, описанию, источнику…"
+              className="w-full rounded-xl border border-gray-700 bg-gray-900 py-2.5 pl-9 pr-9 text-sm outline-none placeholder:text-subtle focus:border-gray-600"
+            />
+            {query && (
+              <button
+                onClick={() => setQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle hover:text-medium transition"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+        )}
+
         {loading && (
-          <div className="flex flex-col gap-6">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="flex flex-col gap-3">
-                <div className="h-5 w-40 animate-pulse rounded-lg bg-gray-800" />
-                {Array.from({ length: 4 }).map((_, j) => (
-                  <div key={j} className="h-16 animate-pulse rounded-2xl border border-gray-800 bg-gray-900" />
-                ))}
-              </div>
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-20 animate-pulse rounded-2xl border border-gray-800 bg-gray-900" />
             ))}
           </div>
         )}
 
         {error && <ErrorBlock message={error} />}
 
-        {!loading && !error && feeds.length === 0 && (
+        {!loading && !error && allItems.length === 0 && (
           <p className="text-sm text-muted">Нет RSS-лент. Добавьте их в панели управления.</p>
         )}
 
-        {!loading && !error && (
-          <div className="flex flex-col gap-4">
-            {feeds.map(({ feed, items }) => {
-              const isCollapsed = collapsed.has(feed.id)
+        {!loading && !error && allItems.length > 0 && filteredItems.length === 0 && (
+          <p className="text-sm text-muted">Ничего не найдено по запросу «{query}»</p>
+        )}
+
+        {!loading && !error && filteredItems.length > 0 && (
+          <div className="kb-scroll flex-1 overflow-y-auto rounded-2xl border border-gray-800 bg-gray-900 divide-y divide-gray-800/70 mb-4">
+            {filteredItems.map((item, i) => {
+              const desc = stripHtml(item.description)
               return (
-                <section key={feed.id} className="overflow-hidden rounded-2xl border border-gray-800 bg-gray-900">
-                  <button
-                    onClick={() => toggleCollapsed(feed.id)}
-                    className="flex w-full cursor-pointer items-center gap-3 px-5 py-4 text-left transition hover:bg-gray-800/50"
-                  >
-                    <Rss size={14} className="shrink-0 text-[var(--color-accent)]" />
-                    <span className="flex-1 text-sm font-semibold">{feed.title}</span>
-                    <span className="rounded-full bg-gray-800 px-2.5 py-0.5 text-xs tabular-nums text-muted">
-                      {items.length}
-                    </span>
+                <a
+                  key={i}
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative flex flex-col gap-2 px-5 py-5 transition hover:bg-gray-800/40"
+                >
+                  <span className="absolute inset-y-0 left-0 w-0.5 scale-y-0 rounded-full bg-[var(--color-accent)] transition-transform duration-150 group-hover:scale-y-100" />
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="text-base font-semibold leading-snug transition-colors group-hover:text-[var(--color-accent)]">{item.title}</span>
+                    {item.published && (
+                      <span className="mt-0.5 shrink-0 text-sm tabular-nums text-soft">
+                        {formatDate(item.published)}
+                      </span>
+                    )}
+                  </div>
+                  {desc && (
+                    <p className="line-clamp-2 text-sm leading-relaxed text-soft">{desc}</p>
+                  )}
+                  <div className="flex items-center gap-1.5 text-xs text-subtle">
+                    <Rss size={11} />
+                    <span>{item.feedTitle}</span>
                     <a
-                      href={feed.url}
+                      href={item.feedUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-md p-1 text-subtle transition hover:bg-gray-700 hover:text-medium"
+                      className="ml-auto rounded-md p-0.5 transition hover:bg-gray-700 hover:text-medium"
                       onClick={e => e.stopPropagation()}
                     >
-                      <ExternalLink size={12} />
+                      <ExternalLink size={11} />
                     </a>
-                    <ChevronDown
-                      size={14}
-                      className="shrink-0 text-subtle transition-transform duration-200"
-                      style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}
-                    />
-                  </button>
-
-                  {!isCollapsed && (
-                    <div className="border-t border-gray-800">
-                      {items.length === 0 ? (
-                        <p className="px-5 py-4 text-sm text-muted">Нет записей</p>
-                      ) : (
-                        items.map((item, i) => {
-                          const desc = stripHtml(item.description)
-                          return (
-                            <a
-                              key={i}
-                              href={item.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="group relative flex flex-col gap-1.5 px-5 py-4 transition hover:bg-gray-800/40"
-                            >
-                              <span
-                                className="absolute inset-y-0 left-0 w-0.5 scale-y-0 rounded-full bg-[var(--color-accent)] transition-transform duration-150 group-hover:scale-y-100"
-                              />
-                              <div className="flex items-start justify-between gap-4">
-                                <span className="text-sm font-medium leading-snug transition-colors group-hover:text-[var(--color-accent)]">{item.title}</span>
-                                {item.published && (
-                                  <span className="mt-0.5 shrink-0 rounded-full bg-gray-800 px-2 py-0.5 text-xs tabular-nums text-muted">
-                                    {formatDate(item.published)}
-                                  </span>
-                                )}
-                              </div>
-                              {desc && (
-                                <p className="line-clamp-2 text-xs leading-relaxed text-muted">{desc}</p>
-                              )}
-                            </a>
-                          )
-                        })
-                      )}
-                    </div>
-                  )}
-                </section>
+                  </div>
+                </a>
               )
             })}
           </div>

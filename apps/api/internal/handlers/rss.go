@@ -192,7 +192,7 @@ func parseFeed(url string) []models.RSSItem {
 		return []models.RSSItem{}
 	}
 
-	const maxItems = 10
+	const maxItems = 50
 	items := make([]models.RSSItem, 0, min(len(feed.Items), maxItems))
 	for _, item := range feed.Items {
 		if len(items) >= maxItems {
