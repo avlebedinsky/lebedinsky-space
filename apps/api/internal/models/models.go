@@ -96,3 +96,10 @@ type KBFileContent struct {
 	Path    string `json:"path"`
 	Content string `json:"content"`
 }
+
+type MoodEntry struct {
+	ID        int64     `json:"id"`
+	Mood      int       `json:"mood"`
+	Note      string    `json:"note"`
+	CreatedAt time.Time `json:"createdAt"`
+}

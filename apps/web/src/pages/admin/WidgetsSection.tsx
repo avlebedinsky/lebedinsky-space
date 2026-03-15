@@ -9,6 +9,7 @@ const WIDGETS = [
   { id: 'metrics', label: 'Метрики' },
   { id: 'network', label: 'Сеть' },
   { id: 'docker',  label: 'Docker' },
+  { id: 'mood',    label: 'Настроение' },
 ] as const
 
 export function WidgetsSection() {

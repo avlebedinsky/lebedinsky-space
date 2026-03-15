@@ -67,6 +67,11 @@ func main() {
 	r.Get("/knowledge/tree", kb.GetTree)
 	r.Get("/knowledge/file", kb.GetFile)
 
+	mood := handlers.NewMoodHandler(pool)
+	r.Get("/mood", mood.List)
+	r.Post("/mood", mood.Create)
+	r.Delete("/mood/{id}", mood.Delete)
+
 	log.Printf("Starting on :%s (env=%s)", cfg.Port, cfg.Environment)
 	if err := http.ListenAndServe(":"+cfg.Port, r); err != nil {
 		log.Fatalf("server: %v", err)

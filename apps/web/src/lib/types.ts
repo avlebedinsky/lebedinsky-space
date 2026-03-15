@@ -87,3 +87,10 @@ export interface KBFileContent {
   path: string
   content: string
 }
+
+export interface MoodEntry {
+  id: number
+  mood: number
+  note: string
+  createdAt: string
+}

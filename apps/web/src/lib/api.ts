@@ -1,4 +1,4 @@
-import type { Service, User, ServiceStatus, ServerMetrics, SiteSettings, ContainerInfo, RSSFeed, RSSFeedWithItems, KBNode, KBFileContent } from './types'
+import type { Service, User, ServiceStatus, ServerMetrics, SiteSettings, ContainerInfo, RSSFeed, RSSFeedWithItems, KBNode, KBFileContent, MoodEntry } from './types'
 
 const BASE = '/api'
 
@@ -57,5 +57,13 @@ export const api = {
   knowledge: {
     tree: (): Promise<KBNode[]> => request('/knowledge/tree'),
     file: (path: string): Promise<KBFileContent> => request(`/knowledge/file?path=${encodeURIComponent(path)}`),
+  },
+
+  mood: {
+    list: (): Promise<MoodEntry[]> => request('/mood'),
+    create: (data: { mood: number; note: string }): Promise<MoodEntry> =>
+      request('/mood', { method: 'POST', body: JSON.stringify(data) }),
+    delete: (id: number): Promise<void> =>
+      request(`/mood/${id}`, { method: 'DELETE' }),
   },
 }

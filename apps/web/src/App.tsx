@@ -27,6 +27,7 @@ import { WeatherWidget } from './components/widgets/WeatherWidget'
 import { MetricsWidget } from './components/widgets/MetricsWidget'
 import { NetworkWidget } from './components/widgets/NetworkWidget'
 import { DockerWidget } from './components/widgets/DockerWidget'
+import { MoodWidget } from './components/widgets/MoodWidget'
 import AdminPage from './pages/AdminPage'
 import RSSPage from './pages/RSSPage'
 import KnowledgePage from './pages/KnowledgePage'
@@ -80,6 +81,7 @@ function renderBlock(id: string, services: Service[], statuses: Map<number, Serv
   if (id === 'metrics') return <MetricsWidget />
   if (id === 'network') return <NetworkWidget />
   if (id === 'docker') return <DockerWidget />
+  if (id === 'mood') return <MoodWidget />
   if (id.startsWith('service:')) {
     const service = services.find(s => s.id === Number(id.slice(8)))
     if (!service) return null
@@ -96,7 +98,7 @@ function Dashboard() {
   const { settings, updateSettings } = useThemeStore()
 
   const gridItems = useMemo(() => {
-    const widgetIds = new Set(['clock', 'weather', 'metrics', 'network', 'docker'])
+    const widgetIds = new Set(['clock', 'weather', 'metrics', 'network', 'docker', 'mood'])
     const hiddenWidgets = new Set(settings.hiddenWidgets ?? [])
     const serviceMap = new Map(services.map(s => [s.id, s]))
 
@@ -113,7 +115,7 @@ function Dashboard() {
     for (const w of ['clock', 'weather', 'metrics']) {
       if (!hiddenWidgets.has(w) && !ordered.includes(w)) ordered.unshift(w)
     }
-    for (const w of ['network', 'docker']) {
+    for (const w of ['network', 'docker', 'mood']) {
       if (!hiddenWidgets.has(w) && !ordered.includes(w)) ordered.push(w)
     }
     for (const s of services) {
