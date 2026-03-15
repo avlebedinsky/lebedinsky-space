@@ -99,9 +99,9 @@ export function KnowledgeSection() {
         <h2 className="text-xs font-semibold uppercase tracking-widest text-subtle">База знаний</h2>
       </div>
 
-      <div className="rounded-2xl border border-gray-800 bg-gray-900 p-4">
+      <div className="rounded-2xl border border-gray-800 bg-gray-900">
         {!editing ? (
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 px-4 min-h-[56px]">
             <div className="flex-1 min-w-0">
               {settings.kbRepoURL ? (
                 <div className="flex flex-col gap-0.5">
@@ -125,7 +125,7 @@ export function KnowledgeSection() {
             </button>
           </div>
         ) : phase === 'connection' ? (
-          <form onSubmit={handleConnect} className="flex flex-col gap-4">
+          <form onSubmit={handleConnect} className="flex flex-col gap-4 p-4">
             <label className="flex flex-col gap-1">
               <span className="text-xs text-dim">URL репозитория *</span>
               <input
@@ -206,7 +206,7 @@ export function KnowledgeSection() {
             </div>
           </form>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 p-4">
             <div className="flex items-center gap-2">
               <button
                 type="button"

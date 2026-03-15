@@ -50,19 +50,19 @@ export function AppearanceForm({ onCancel, onSaved }: AppearanceFormProps) {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <section>
-        <h2 className="mb-5 text-xs font-semibold uppercase tracking-widest text-subtle">Фон</h2>
-        <div className="mb-5 flex gap-2">
+    <div className="flex flex-col gap-6">
+      <section className="rounded-xl border border-gray-800 bg-gray-800/30 p-4">
+        <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-subtle">Фон</p>
+        <div className="mb-4 inline-flex rounded-xl border border-gray-700 bg-gray-800 p-0.5">
           <button
             onClick={() => { setBgMode('color'); set('bgImage', '') }}
-            className={`cursor-pointer rounded-xl border px-4 py-2 text-sm transition ${bgMode === 'color' ? 'border-gray-600 bg-gray-800' : 'border-gray-700 bg-gray-800 text-dim hover:border-gray-600 hover:text-soft'}`}
+            className={`cursor-pointer rounded-[10px] px-4 py-1.5 text-sm transition ${bgMode === 'color' ? 'bg-gray-700 text-soft shadow-sm' : 'text-dim hover:text-soft'}`}
           >
             Цвет
           </button>
           <button
             onClick={() => setBgMode('image')}
-            className={`cursor-pointer rounded-xl border px-4 py-2 text-sm transition ${bgMode === 'image' ? 'border-gray-600 bg-gray-800' : 'border-gray-700 bg-gray-800 text-dim hover:border-gray-600 hover:text-soft'}`}
+            className={`cursor-pointer rounded-[10px] px-4 py-1.5 text-sm transition ${bgMode === 'image' ? 'bg-gray-700 text-soft shadow-sm' : 'text-dim hover:text-soft'}`}
           >
             Изображение
           </button>
@@ -93,7 +93,7 @@ export function AppearanceForm({ onCancel, onSaved }: AppearanceFormProps) {
             </label>
             {draft.bgImage && (
               <div
-                className="h-48 w-full rounded-xl border border-gray-700"
+                className="h-32 w-full rounded-xl border border-gray-700"
                 style={{ backgroundImage: `url(${draft.bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
               />
             )}
@@ -101,53 +101,51 @@ export function AppearanceForm({ onCancel, onSaved }: AppearanceFormProps) {
         )}
       </section>
 
-      <div className="border-t border-gray-800" />
-
-      <section>
-        <h2 className="mb-5 text-xs font-semibold uppercase tracking-widest text-subtle">Карточки</h2>
-        <div className="mb-5 grid grid-cols-2 gap-4">
-          <ColorPicker label="Фон карточки" value={draft.cardColor} onChange={v => set('cardColor', v)} />
-          <ColorPicker
-            label="Цвет рамки"
-            value={draft.borderColor.startsWith('#') && draft.borderColor.length === 9
-              ? `#${draft.borderColor.slice(1, 7)}`
-              : draft.borderColor.startsWith('#') ? draft.borderColor : '#ffffff'}
-            onChange={v => set('borderColor', v)}
-          />
-        </div>
-        <div
-          className="relative flex flex-col gap-3 rounded-2xl border p-5"
-          style={{ backgroundColor: draft.cardColor, borderColor: draft.borderColor }}
-        >
+      <section className="rounded-xl border border-gray-800 bg-gray-800/30 p-4">
+        <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-subtle">Карточки</p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-4">
+            <ColorPicker label="Фон карточки" value={draft.cardColor} onChange={v => set('cardColor', v)} />
+            <ColorPicker
+              label="Цвет рамки"
+              value={draft.borderColor.startsWith('#') && draft.borderColor.length === 9
+                ? `#${draft.borderColor.slice(1, 7)}`
+                : draft.borderColor.startsWith('#') ? draft.borderColor : '#ffffff'}
+              onChange={v => set('borderColor', v)}
+            />
+          </div>
           <div
-            className="flex size-10 items-center justify-center rounded-xl"
-            style={{ backgroundColor: `${draft.accentColor}20`, color: draft.accentColor }}
+            className="relative flex flex-col justify-between rounded-2xl border p-4"
+            style={{ backgroundColor: draft.cardColor, borderColor: draft.borderColor }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            <div className="flex items-start justify-between">
+              <div
+                className="flex size-9 items-center justify-center rounded-xl"
+                style={{ backgroundColor: `${draft.accentColor}20`, color: draft.accentColor }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              </div>
+              <ExternalLink size={13} className="text-faint" />
+            </div>
+            <div className="mt-3">
+              <p className="text-sm font-semibold" style={{ color: draft.textColor }}>Пример сервиса</p>
+              <p className="mt-0.5 text-xs text-dim">Описание сервиса</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold">Пример сервиса</p>
-            <p className="mt-0.5 text-xs text-dim">Описание сервиса</p>
-          </div>
-          <ExternalLink size={14} className="absolute right-4 top-4 text-faint" />
         </div>
       </section>
 
-      <div className="border-t border-gray-800" />
-
-      <section>
-        <h2 className="mb-5 text-xs font-semibold uppercase tracking-widest text-subtle">Текст и акцент</h2>
+      <section className="rounded-xl border border-gray-800 bg-gray-800/30 p-4">
+        <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-subtle">Текст и акцент</p>
         <div className="grid grid-cols-2 gap-4">
           <ColorPicker label="Цвет текста" value={draft.textColor} onChange={v => set('textColor', v)} />
           <ColorPicker label="Акцентный цвет" value={draft.accentColor} onChange={v => set('accentColor', v)} />
         </div>
-        <div className="mt-4 flex items-center">
-          <span className="text-sm" style={{ color: draft.textColor }}>lebedinsky</span>
-          <span className="text-sm" style={{ color: draft.accentColor }}>.space</span>
+        <div className="mt-4 flex items-center gap-0.5">
+          <span className="text-sm font-medium" style={{ color: draft.textColor }}>lebedinsky</span>
+          <span className="text-sm font-medium" style={{ color: draft.accentColor }}>.space</span>
         </div>
       </section>
-
-      <div className="border-t border-gray-800" />
 
       <div className="flex items-center justify-between gap-3">
         <button

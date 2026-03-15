@@ -139,9 +139,9 @@ export function RSSSection() {
       )}
 
       {feeds.map(feed => (
-        <div key={feed.id} className="rounded-2xl border border-gray-800 bg-gray-900 p-4">
+        <div key={feed.id} className="rounded-2xl border border-gray-800 bg-gray-900">
           {editingId === feed.id ? (
-            <>
+            <div className="p-4">
               <p className="mb-4 text-sm font-medium text-soft">Редактировать ленту</p>
               <form onSubmit={handleUpdate} className="flex flex-col gap-3">
                 {editError && <p className="text-sm text-red-400">{editError}</p>}
@@ -167,9 +167,9 @@ export function RSSSection() {
                   </button>
                 </div>
               </form>
-            </>
+            </div>
           ) : (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 px-4 min-h-[56px]">
               <div className="flex-1 min-w-0">
                 <p className={`font-medium ${feed.hidden ? 'opacity-40' : ''}`}>{feed.title}</p>
                 <p className="truncate text-sm text-muted">{feed.url}</p>

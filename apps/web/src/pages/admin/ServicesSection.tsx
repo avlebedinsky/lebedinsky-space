@@ -66,18 +66,18 @@ export function ServicesSection() {
       {services.map(service => {
         const Icon = getIcon(service.iconName)
         return (
-          <div key={service.id} className="rounded-2xl border border-gray-800 bg-gray-900 p-4">
+          <div key={service.id} className="rounded-2xl border border-gray-800 bg-gray-900">
             {editingId === service.id ? (
-              <>
+              <div className="p-4">
                 <p className="mb-4 text-sm font-medium text-soft">Редактировать</p>
                 <ServiceForm
                   initial={{ name: service.name, description: service.description, url: service.url, iconName: service.iconName, color: service.color, sortOrder: service.sortOrder, hidden: service.hidden, cardColSpan: service.cardColSpan ?? 1, cardRowSpan: service.cardRowSpan ?? 1 }}
                   onSubmit={data => handleUpdate(service.id, data)}
                   onCancel={() => setEditingId(null)}
                 />
-              </>
+              </div>
             ) : (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 px-4 min-h-[56px]">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-xl"
                   style={{ backgroundColor: `${service.color}20`, color: service.color }}>
                   <Icon size={18} />

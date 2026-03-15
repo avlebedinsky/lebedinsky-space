@@ -36,18 +36,18 @@ export function WidgetsSection() {
         const hidden = hiddenWidgets.includes(id)
         const span = widgetSpans[id] ?? { colSpan: 1, rowSpan: 1 }
         return (
-          <div key={id} className="rounded-2xl border border-gray-800 bg-gray-900 px-4 py-2.5">
+          <div key={id} className="rounded-2xl border border-gray-800 bg-gray-900">
             {editingId === id ? (
-              <>
+              <div className="p-4">
                 <p className="mb-4 text-sm font-medium text-soft">{label}</p>
                 <WidgetForm
                   initial={span}
                   onSubmit={data => handleSaveSpan(id, data)}
                   onCancel={() => setEditingId(null)}
                 />
-              </>
+              </div>
             ) : (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 px-4 min-h-[56px]">
                 <div className="flex-1">
                   <p className={`font-medium${hidden ? ' text-muted line-through' : ''}`}>{label}</p>
                   <p className="text-xs text-muted">{span.colSpan} кол · {span.rowSpan} стр</p>
