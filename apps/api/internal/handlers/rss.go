@@ -34,7 +34,7 @@ func NewRSSHandler(db *pgxpool.Pool) *RSSHandler {
 }
 
 func (h *RSSHandler) ListFeeds(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.db.Query(r.Context(), `SELECT id, title, url, hidden, created_at FROM rss_feeds ORDER BY created_at ASC`)
+	rows, err := h.db.Query(r.Context(), `SELECT id, title, url, hidden, item_limit, created_at FROM rss_feeds ORDER BY created_at ASC`)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -44,7 +44,7 @@ func (h *RSSHandler) ListFeeds(w http.ResponseWriter, r *http.Request) {
 	feeds := make([]models.RSSFeed, 0)
 	for rows.Next() {
 		var f models.RSSFeed
-		if err := rows.Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.CreatedAt); err != nil {
+		if err := rows.Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.ItemLimit, &f.CreatedAt); err != nil {
 			continue
 		}
 		feeds = append(feeds, f)
@@ -56,19 +56,23 @@ func (h *RSSHandler) ListFeeds(w http.ResponseWriter, r *http.Request) {
 
 func (h *RSSHandler) CreateFeed(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		Title string `json:"title"`
-		URL   string `json:"url"`
+		Title     string `json:"title"`
+		URL       string `json:"url"`
+		ItemLimit int    `json:"itemLimit"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Title == "" || body.URL == "" {
 		http.Error(w, "Invalid body", http.StatusBadRequest)
 		return
 	}
+	if body.ItemLimit <= 0 {
+		body.ItemLimit = 10
+	}
 
 	var f models.RSSFeed
 	err := h.db.QueryRow(r.Context(),
-		`INSERT INTO rss_feeds (title, url) VALUES ($1, $2) RETURNING id, title, url, hidden, created_at`,
-		body.Title, body.URL,
-	).Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.CreatedAt)
+		`INSERT INTO rss_feeds (title, url, item_limit) VALUES ($1, $2, $3) RETURNING id, title, url, hidden, item_limit, created_at`,
+		body.Title, body.URL, body.ItemLimit,
+	).Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.ItemLimit, &f.CreatedAt)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -86,20 +90,24 @@ func (h *RSSHandler) CreateFeed(w http.ResponseWriter, r *http.Request) {
 func (h *RSSHandler) UpdateFeed(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	var body struct {
-		Title  string `json:"title"`
-		URL    string `json:"url"`
-		Hidden bool   `json:"hidden"`
+		Title     string `json:"title"`
+		URL       string `json:"url"`
+		Hidden    bool   `json:"hidden"`
+		ItemLimit int    `json:"itemLimit"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Title == "" || body.URL == "" {
 		http.Error(w, "Invalid body", http.StatusBadRequest)
 		return
 	}
+	if body.ItemLimit <= 0 {
+		body.ItemLimit = 10
+	}
 
 	var f models.RSSFeed
 	err := h.db.QueryRow(r.Context(),
-		`UPDATE rss_feeds SET title = $1, url = $2, hidden = $3 WHERE id = $4 RETURNING id, title, url, hidden, created_at`,
-		body.Title, body.URL, body.Hidden, id,
-	).Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.CreatedAt)
+		`UPDATE rss_feeds SET title = $1, url = $2, hidden = $3, item_limit = $4 WHERE id = $5 RETURNING id, title, url, hidden, item_limit, created_at`,
+		body.Title, body.URL, body.Hidden, body.ItemLimit, id,
+	).Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.ItemLimit, &f.CreatedAt)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -139,7 +147,7 @@ func (h *RSSHandler) FetchItems(w http.ResponseWriter, r *http.Request) {
 	}
 	h.mu.Unlock()
 
-	rows, err := h.db.Query(r.Context(), `SELECT id, title, url, hidden, created_at FROM rss_feeds WHERE hidden = FALSE ORDER BY created_at ASC`)
+	rows, err := h.db.Query(r.Context(), `SELECT id, title, url, hidden, item_limit, created_at FROM rss_feeds WHERE hidden = FALSE ORDER BY created_at ASC`)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -149,7 +157,7 @@ func (h *RSSHandler) FetchItems(w http.ResponseWriter, r *http.Request) {
 	var feeds []models.RSSFeed
 	for rows.Next() {
 		var f models.RSSFeed
-		if err := rows.Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.CreatedAt); err != nil {
+		if err := rows.Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.ItemLimit, &f.CreatedAt); err != nil {
 			continue
 		}
 		feeds = append(feeds, f)
@@ -163,7 +171,7 @@ func (h *RSSHandler) FetchItems(w http.ResponseWriter, r *http.Request) {
 	results := make(chan result, len(feeds))
 	for i, feed := range feeds {
 		go func(idx int, f models.RSSFeed) {
-			items := parseFeed(f.URL)
+			items := parseFeed(f.URL, f.ItemLimit)
 			results <- result{index: idx, data: models.RSSFeedWithItems{Feed: f, Items: items}}
 		}(i, feed)
 	}
@@ -182,7 +190,7 @@ func (h *RSSHandler) FetchItems(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(grouped)
 }
 
-func parseFeed(url string) []models.RSSItem {
+func parseFeed(url string, limit int) []models.RSSItem {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -192,10 +200,9 @@ func parseFeed(url string) []models.RSSItem {
 		return []models.RSSItem{}
 	}
 
-	const maxItems = 50
-	items := make([]models.RSSItem, 0, min(len(feed.Items), maxItems))
+	items := make([]models.RSSItem, 0, min(len(feed.Items), limit))
 	for _, item := range feed.Items {
-		if len(items) >= maxItems {
+		if len(items) >= limit {
 			break
 		}
 		published := ""

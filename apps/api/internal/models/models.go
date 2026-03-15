@@ -23,7 +23,7 @@ type User struct {
 
 type ServiceStatus struct {
 	ID     int64  `json:"id"`
-	Status string `json:"status"` // "up" | "down" | "unknown"
+	Status string `json:"status"`
 }
 
 type ServerMetrics struct {
@@ -31,17 +31,17 @@ type ServerMetrics struct {
 	CPU      float64 `json:"cpu"`
 	RAM      float64 `json:"ram"`
 	Disk     float64 `json:"disk"`
-	Uptime   uint64  `json:"uptime"`  // seconds since boot
-	NetIn    uint64  `json:"netIn"`   // cumulative bytes received
-	NetOut   uint64  `json:"netOut"`  // cumulative bytes sent
+	Uptime   uint64  `json:"uptime"`
+	NetIn    uint64  `json:"netIn"`
+	NetOut   uint64  `json:"netOut"`
 }
 
 type ContainerInfo struct {
-	ID     string `json:"id"`     // first 12 chars
-	Name   string `json:"name"`   // without leading "/"
-	Image  string `json:"image"`  // image name without digest
-	State  string `json:"state"`  // "running", "exited", etc.
-	Status string `json:"status"` // human-readable, e.g. "Up 3 days"
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Image  string `json:"image"`
+	State  string `json:"state"`
+	Status string `json:"status"`
 }
 
 type RSSFeed struct {
@@ -49,6 +49,7 @@ type RSSFeed struct {
 	Title     string    `json:"title"`
 	URL       string    `json:"url"`
 	Hidden    bool      `json:"hidden"`
+	ItemLimit int       `json:"itemLimit"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 

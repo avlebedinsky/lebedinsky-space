@@ -44,9 +44,9 @@ export const api = {
   rss: {
     feeds: {
       list: (): Promise<RSSFeed[]> => request('/rss/feeds'),
-      create: (data: { title: string; url: string }): Promise<RSSFeed> =>
+      create: (data: { title: string; url: string; itemLimit: number }): Promise<RSSFeed> =>
         request('/rss/feeds', { method: 'POST', body: JSON.stringify(data) }),
-      update: (id: number, data: { title: string; url: string; hidden: boolean }): Promise<RSSFeed> =>
+      update: (id: number, data: { title: string; url: string; hidden: boolean; itemLimit: number }): Promise<RSSFeed> =>
         request(`/rss/feeds/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
       delete: (id: number): Promise<void> =>
         request(`/rss/feeds/${id}`, { method: 'DELETE' }),

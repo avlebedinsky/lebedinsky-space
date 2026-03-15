@@ -9,11 +9,13 @@ export function RSSSection() {
   const [showAdd, setShowAdd] = useState(false)
   const [title, setTitle] = useState('')
   const [url, setUrl] = useState('')
+  const [itemLimit, setItemLimit] = useState(10)
   const [adding, setAdding] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editTitle, setEditTitle] = useState('')
   const [editUrl, setEditUrl] = useState('')
+  const [editItemLimit, setEditItemLimit] = useState(10)
   const [saving, setSaving] = useState(false)
   const [editError, setEditError] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
@@ -27,10 +29,11 @@ export function RSSSection() {
     setAdding(true)
     setError(null)
     try {
-      const feed = await api.rss.feeds.create({ title, url })
+      const feed = await api.rss.feeds.create({ title, url, itemLimit })
       setFeeds(prev => [...prev, feed])
       setTitle('')
       setUrl('')
+      setItemLimit(10)
       setShowAdd(false)
     } catch {
       setError('Ошибка добавления ленты')
@@ -52,6 +55,7 @@ export function RSSSection() {
     setEditingId(feed.id)
     setEditTitle(feed.title)
     setEditUrl(feed.url)
+    setEditItemLimit(feed.itemLimit || 10)
     setEditError(null)
   }
 
@@ -67,7 +71,7 @@ export function RSSSection() {
     setEditError(null)
     const current = feeds.find(f => f.id === editingId)
     try {
-      const updated = await api.rss.feeds.update(editingId, { title: editTitle, url: editUrl, hidden: current?.hidden ?? false })
+      const updated = await api.rss.feeds.update(editingId, { title: editTitle, url: editUrl, hidden: current?.hidden ?? false, itemLimit: editItemLimit })
       setFeeds(prev => prev.map(f => (f.id === editingId ? updated : f)))
       setEditingId(null)
     } catch {
@@ -79,7 +83,7 @@ export function RSSSection() {
 
   const handleToggleHidden = async (feed: RSSFeed) => {
     try {
-      const updated = await api.rss.feeds.update(feed.id, { title: feed.title, url: feed.url, hidden: !feed.hidden })
+      const updated = await api.rss.feeds.update(feed.id, { title: feed.title, url: feed.url, hidden: !feed.hidden, itemLimit: feed.itemLimit })
       setFeeds(prev => prev.map(f => (f.id === feed.id ? updated : f)))
     } catch {
       setError('Ошибка изменения видимости ленты')
@@ -115,6 +119,22 @@ export function RSSSection() {
               <input required type="url" value={url} onChange={e => setUrl(e.target.value)}
                 className="rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-sm outline-none transition focus:border-gray-600" />
             </label>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-dim">Лимит новостей</span>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={() => setItemLimit(v => Math.max(1, v - 1))}
+                  className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-dim cursor-pointer transition hover:border-gray-600 hover:text-medium select-none">
+                  −
+                </button>
+                <input type="number" min={1} max={200} value={itemLimit} onChange={e => setItemLimit(Math.min(200, Math.max(1, Number(e.target.value) || 1)))}
+                  className="w-16 rounded-xl border border-gray-700 bg-gray-800 px-2 py-2 text-center text-sm outline-none transition focus:border-gray-600 [appearance:textfield] [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden" />
+                <button type="button" onClick={() => setItemLimit(v => Math.min(200, v + 1))}
+                  className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-dim cursor-pointer transition hover:border-gray-600 hover:text-medium select-none">
+                  +
+                </button>
+                <span className="text-xs text-muted">новостей из источника</span>
+              </div>
+            </div>
             <div className="flex gap-2 justify-end">
               <button type="button" onClick={() => { setShowAdd(false); setError(null) }}
                 className="rounded-xl border border-gray-700 bg-gray-800 px-4 py-2 text-sm text-muted cursor-pointer transition hover:border-gray-600">
@@ -155,6 +175,22 @@ export function RSSSection() {
                   <input required type="url" value={editUrl} onChange={e => setEditUrl(e.target.value)}
                     className="rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-sm outline-none transition focus:border-gray-600" />
                 </label>
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-dim">Лимит новостей</span>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => setEditItemLimit(v => Math.max(1, v - 1))}
+                      className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-dim cursor-pointer transition hover:border-gray-600 hover:text-medium select-none">
+                      −
+                    </button>
+                    <input type="number" min={1} max={200} value={editItemLimit} onChange={e => setEditItemLimit(Math.min(200, Math.max(1, Number(e.target.value) || 1)))}
+                      className="w-16 rounded-xl border border-gray-700 bg-gray-800 px-2 py-2 text-center text-sm outline-none transition focus:border-gray-600 [appearance:textfield] [&::-webkit-inner-spin-button]:hidden [&::-webkit-outer-spin-button]:hidden" />
+                    <button type="button" onClick={() => setEditItemLimit(v => Math.min(200, v + 1))}
+                      className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-dim cursor-pointer transition hover:border-gray-600 hover:text-medium select-none">
+                      +
+                    </button>
+                    <span className="text-xs text-muted">новостей из источника</span>
+                  </div>
+                </div>
                 <div className="flex gap-2 justify-end">
                   <button type="button" onClick={handleCancelEdit}
                     className="rounded-xl border border-gray-700 bg-gray-800 px-4 py-2 text-sm text-muted cursor-pointer transition hover:border-gray-600">
@@ -171,7 +207,10 @@ export function RSSSection() {
           ) : (
             <div className="flex items-center gap-4 px-4 min-h-[56px]">
               <div className="flex-1 min-w-0">
-                <p className={`font-medium ${feed.hidden ? 'opacity-40' : ''}`}>{feed.title}</p>
+                <div className="flex min-w-0 items-center gap-2">
+                  <p className={`truncate font-medium ${feed.hidden ? 'opacity-40' : ''}`}>{feed.title}</p>
+                  <span className="shrink-0 rounded-md border border-gray-700 bg-gray-800 px-1.5 py-0.5 text-[10px] text-muted">{feed.itemLimit || 10}</span>
+                </div>
                 <p className="truncate text-sm text-muted">{feed.url}</p>
               </div>
               <div className="flex gap-1">

@@ -45,6 +45,7 @@ export interface RSSFeed {
   title: string
   url: string
   hidden: boolean
+  itemLimit: number
   createdAt: string
 }
 
