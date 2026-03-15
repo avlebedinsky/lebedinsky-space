@@ -21,7 +21,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen px-4 py-8" style={bgStyle}>
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-7xl">
         <header className="mb-8 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link

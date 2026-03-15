@@ -132,7 +132,7 @@ function Dashboard() {
     return () => mq.removeEventListener('change', handler)
   }, [])
 
-  const getGridCols = () => window.innerWidth >= 1024 ? 3 : window.innerWidth >= 640 ? 2 : 1
+  const getGridCols = () => window.innerWidth >= 1280 ? 4 : window.innerWidth >= 1024 ? 3 : window.innerWidth >= 640 ? 2 : 1
   const [gridCols, setGridCols] = useState(getGridCols)
   useEffect(() => {
     const handler = () => setGridCols(getGridCols())
@@ -158,7 +158,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen overflow-x-hidden px-4 py-8" style={bgStyle}>
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-7xl">
         <header className="mb-10 flex items-center justify-between gap-4">
           <h1 className="flex min-w-0 items-center gap-3 text-2xl font-semibold tracking-tight sm:text-3xl">
             <img src="/favicon.svg" alt="logo" className="size-8 sm:size-9" />
@@ -188,7 +188,7 @@ function Dashboard() {
           </div>
         </header>
 
-        <main className="grid select-none grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" style={{ gridAutoRows: '160px' }}>
+        <main className="grid select-none grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" style={{ gridAutoRows: '160px' }}>
           {servicesLoading ? (
             <>
               <ClockWidget />

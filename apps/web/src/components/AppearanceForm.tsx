@@ -84,11 +84,11 @@ export function AppearanceForm({ onCancel, onSaved }: AppearanceFormProps) {
               <span className="text-xs text-dim">URL изображения</span>
               <div className="flex gap-2">
                 <input
-                  type="url"
+                  type="text"
                   value={draft.bgImage}
                   onChange={e => set('bgImage', e.target.value)}
                   placeholder="https://…"
-                  className="flex-1 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-sm outline-none transition focus:border-gray-600"
+                  className="flex-1 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-soft placeholder:text-dim outline-none transition focus:border-gray-600"
                 />
                 <button
                   type="button"

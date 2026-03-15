@@ -79,7 +79,7 @@ export function ServiceForm({
           <Select
             label="Колонок"
             value={form.cardColSpan}
-            options={[{ value: 1, label: '1' }, { value: 2, label: '2' }, { value: 3, label: '3' }]}
+            options={[{ value: 1, label: '1' }, { value: 2, label: '2' }, { value: 3, label: '3' }, { value: 4, label: '4' }]}
             onChange={v => set('cardColSpan', Number(v))}
           />
         </div>

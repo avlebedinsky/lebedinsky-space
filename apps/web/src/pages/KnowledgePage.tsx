@@ -169,7 +169,7 @@ export default function KnowledgePage() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden px-4" style={bgStyle}>
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col min-h-0">
+      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col min-h-0">
 
         <header className="shrink-0 py-6 flex items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-4">
