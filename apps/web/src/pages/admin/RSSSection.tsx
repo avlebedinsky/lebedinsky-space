@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Pencil, Eye, EyeOff } from 'lucide-react'
+import { Plus, Trash2, Pencil, Eye, EyeOff, Rss } from 'lucide-react'
 import { api } from '../../lib/api'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
 import type { RSSFeed } from '../../lib/types'
@@ -155,7 +155,10 @@ export function RSSSection() {
       )}
 
       {!showAdd && feeds.length === 0 && (
-        <p className="text-sm text-muted">Нет лент. Нажмите «Добавить ленту», чтобы добавить первую.</p>
+        <div className="flex items-center gap-3 rounded-2xl border border-dashed border-gray-800 px-4 min-h-[56px]">
+          <Rss size={14} className="shrink-0 text-subtle" />
+          <p className="text-sm text-subtle">Нет RSS-лент</p>
+        </div>
       )}
 
       {feeds.map(feed => (

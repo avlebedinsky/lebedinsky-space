@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Pencil, Trash2, Eye, EyeOff } from 'lucide-react'
+import { Plus, Pencil, Trash2, Eye, EyeOff, LayoutGrid } from 'lucide-react'
 import { useServicesStore } from '../../store/servicesStore'
 import { getIcon } from '../../lib/icons'
 import { ServiceForm } from './ServiceForm'
@@ -60,7 +60,10 @@ export function ServicesSection() {
       )}
 
       {!creating && services.length === 0 && (
-        <p className="text-sm text-muted">Нет сервисов. Нажмите «Добавить сервис», чтобы добавить первый.</p>
+        <div className="flex items-center gap-3 rounded-2xl border border-dashed border-gray-800 px-4 min-h-[56px]">
+          <LayoutGrid size={14} className="shrink-0 text-subtle" />
+          <p className="text-sm text-subtle">Нет сервисов</p>
+        </div>
       )}
 
       {services.map(service => {
