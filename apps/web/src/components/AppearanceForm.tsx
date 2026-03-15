@@ -59,8 +59,8 @@ export function AppearanceForm({ onCancel, onSaved }: AppearanceFormProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <section className="rounded-xl border border-gray-800 bg-gray-800/30 p-4">
+    <div className="flex flex-col divide-y divide-gray-800">
+      <section className="pb-6">
         <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-subtle">Фон</p>
         <div className="mb-4 inline-flex rounded-xl border border-gray-700 bg-gray-800 p-0.5">
           <button
@@ -110,7 +110,7 @@ export function AppearanceForm({ onCancel, onSaved }: AppearanceFormProps) {
         )}
       </section>
 
-      <section className="rounded-xl border border-gray-800 bg-gray-800/30 p-4">
+      <section className="py-6">
         <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-subtle">Карточки</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-4">
@@ -144,7 +144,7 @@ export function AppearanceForm({ onCancel, onSaved }: AppearanceFormProps) {
         </div>
       </section>
 
-      <section className="rounded-xl border border-gray-800 bg-gray-800/30 p-4">
+      <section className="py-6">
         <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-subtle">Текст и акцент</p>
         <div className="grid grid-cols-2 gap-4">
           <ColorPicker label="Цвет текста" value={draft.textColor} onChange={v => set('textColor', v)} />
@@ -156,7 +156,7 @@ export function AppearanceForm({ onCancel, onSaved }: AppearanceFormProps) {
         </div>
       </section>
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3 pt-6">
         <button
           type="button"
           onClick={() => setConfirmReset(true)}

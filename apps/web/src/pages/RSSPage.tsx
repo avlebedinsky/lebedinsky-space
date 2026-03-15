@@ -123,11 +123,11 @@ export default function RSSPage() {
                   href={item.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative flex flex-col gap-2 px-5 py-5 transition hover:bg-gray-800/40"
+                  className="group relative flex flex-col gap-2 px-5 py-5 transition sm:hover:bg-gray-800/40"
                 >
-                  <span className="absolute inset-y-0 left-0 w-0.5 scale-y-0 rounded-full bg-[var(--color-accent)] transition-transform duration-150 group-hover:scale-y-100" />
+                  <span className="absolute inset-y-0 left-0 w-0.5 scale-y-0 rounded-full bg-[var(--color-accent)] transition-transform duration-150 sm:group-hover:scale-y-100" />
                   <div className="flex items-start justify-between gap-4">
-                    <span className="text-base font-semibold leading-snug transition-colors group-hover:text-[var(--color-accent)]">{item.title}</span>
+                    <span className="text-base font-semibold leading-snug transition-colors sm:group-hover:text-[var(--color-accent)]">{item.title}</span>
                     {item.published && (
                       <span className="mt-0.5 shrink-0 text-sm tabular-nums text-soft">
                         {formatDate(item.published)}
@@ -144,7 +144,7 @@ export default function RSSPage() {
                       href={item.feedUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="ml-auto rounded-md p-0.5 transition hover:bg-gray-700 hover:text-medium"
+                      className="ml-auto rounded-md p-0.5 transition sm:hover:bg-gray-700 sm:hover:text-medium"
                       onClick={e => e.stopPropagation()}
                     >
                       <ExternalLink size={11} />
