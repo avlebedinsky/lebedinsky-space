@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pencil, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Pencil, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react'
 import { useThemeStore } from '../../store/themeStore'
 import { api } from '../../lib/api'
 import type { KBNode } from '../../lib/types'
@@ -8,9 +8,11 @@ export function KnowledgeSection() {
   const { settings, updateSettings } = useThemeStore()
 
   const [editing, setEditing] = useState(false)
+  const [phase, setPhase] = useState<'connection' | 'folders'>('connection')
   const [repoURL, setRepoURL] = useState('')
   const [token, setToken] = useState('')
   const [showToken, setShowToken] = useState(false)
+  const [connecting, setConnecting] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -23,14 +25,19 @@ export function KnowledgeSection() {
     setToken('')
     setError(null)
     setAllowedFolders(settings.kbAllowedFolders ?? [])
-    setEditing(true)
+    setTopFolders([])
 
     if (settings.kbRepoURL) {
+      setPhase('folders')
       setFoldersLoading(true)
+      setEditing(true)
       api.knowledge.tree()
         .then(nodes => setTopFolders(nodes))
         .catch(() => setTopFolders([]))
         .finally(() => setFoldersLoading(false))
+    } else {
+      setPhase('connection')
+      setEditing(true)
     }
   }
 
@@ -46,15 +53,35 @@ export function KnowledgeSection() {
     )
   }
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleConnect = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSaving(true)
+    setConnecting(true)
     setError(null)
     try {
       await updateSettings({
         ...settings,
         kbRepoURL: repoURL,
-        kbGithubToken: token,
+        kbGithubToken: token || (settings.kbGithubToken ?? ''),
+        kbAllowedFolders: settings.kbAllowedFolders ?? [],
+      })
+      setFoldersLoading(true)
+      setPhase('folders')
+      const nodes = await api.knowledge.tree().catch(() => [])
+      setTopFolders(nodes)
+    } catch {
+      setError('Ошибка подключения к репозиторию')
+    } finally {
+      setConnecting(false)
+      setFoldersLoading(false)
+    }
+  }
+
+  const handleSaveFolders = async () => {
+    setSaving(true)
+    setError(null)
+    try {
+      await updateSettings({
+        ...settings,
         kbAllowedFolders: allowedFolders,
       })
       setEditing(false)
@@ -97,11 +124,12 @@ export function KnowledgeSection() {
               <Pencil size={14} />
             </button>
           </div>
-        ) : (
-          <form onSubmit={handleSave} className="flex flex-col gap-4">
+        ) : phase === 'connection' ? (
+          <form onSubmit={handleConnect} className="flex flex-col gap-4">
             <label className="flex flex-col gap-1">
               <span className="text-xs text-dim">URL репозитория *</span>
               <input
+                required
                 type="url"
                 value={repoURL}
                 onChange={e => setRepoURL(e.target.value)}
@@ -156,6 +184,41 @@ export function KnowledgeSection() {
               </span>
             </label>
 
+            {error && <p className="text-xs text-red-400">{error}</p>}
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="rounded-xl border border-gray-700 bg-gray-800 px-4 py-2 text-sm text-dim cursor-pointer transition hover:border-gray-600 hover:text-soft"
+              >
+                Отмена
+              </button>
+              <button
+                type="submit"
+                disabled={connecting || !repoURL}
+                className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium cursor-pointer transition hover:opacity-85 disabled:opacity-50"
+                style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-text)' }}
+              >
+                {connecting && <Loader2 size={13} className="animate-spin" />}
+                {connecting ? 'Подключаю…' : 'Подключить →'}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPhase('connection')}
+                className="flex items-center gap-1.5 text-xs text-subtle cursor-pointer transition hover:text-soft"
+              >
+                <ArrowLeft size={12} /> Изменить подключение
+              </button>
+              <div className="flex-1 h-px bg-gray-800" />
+              <p className="text-xs text-subtle truncate max-w-xs">{repoURL}</p>
+            </div>
+
             <div className="flex flex-col gap-2">
               <span className="text-xs text-dim">
                 Показывать папки{' '}
@@ -166,11 +229,7 @@ export function KnowledgeSection() {
                   <Loader2 size={12} className="animate-spin" /> Загрузка папок…
                 </div>
               ) : topFolders.length === 0 ? (
-                <p className="text-xs text-subtle">
-                  {settings.kbRepoURL
-                    ? 'Нет папок или не удалось загрузить'
-                    : 'Сначала укажи репозиторий и сохрани'}
-                </p>
+                <p className="text-xs text-subtle">Нет папок или не удалось загрузить</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {topFolders.map(folder => {
@@ -201,12 +260,13 @@ export function KnowledgeSection() {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="rounded-xl border border-gray-700 bg-gray-800 px-4 py-2 text-sm text-muted cursor-pointer transition hover:border-gray-600"
+                className="rounded-xl border border-gray-700 bg-gray-800 px-4 py-2 text-sm text-dim cursor-pointer transition hover:border-gray-600 hover:text-soft"
               >
                 Отмена
               </button>
               <button
-                type="submit"
+                type="button"
+                onClick={handleSaveFolders}
                 disabled={saving}
                 className="rounded-xl px-4 py-2 text-sm font-medium cursor-pointer transition hover:opacity-85 disabled:opacity-50"
                 style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-text)' }}
@@ -214,11 +274,10 @@ export function KnowledgeSection() {
                 {saving ? 'Сохраняю…' : 'Сохранить'}
               </button>
             </div>
-          </form>
+          </div>
         )}
       </div>
     </section>
   )
 }
-
 

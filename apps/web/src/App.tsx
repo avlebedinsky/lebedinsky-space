@@ -1,6 +1,6 @@
 import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
-import { Settings, Palette, Rss, BookOpen } from 'lucide-react'
+import { Settings, Rss, BookOpen } from 'lucide-react'
 import {
   DndContext,
   closestCenter,
@@ -28,7 +28,6 @@ import { MetricsWidget } from './components/widgets/MetricsWidget'
 import { NetworkWidget } from './components/widgets/NetworkWidget'
 import { DockerWidget } from './components/widgets/DockerWidget'
 import AdminPage from './pages/AdminPage'
-import SettingsPage from './pages/SettingsPage'
 import RSSPage from './pages/RSSPage'
 import KnowledgePage from './pages/KnowledgePage'
 import type { Service, ServiceStatus } from './lib/types'
@@ -179,20 +178,12 @@ function Dashboard() {
               <BookOpen size={13} /> <span className="hidden sm:inline">База знаний</span>
             </Link>
             {user?.isAdmin && (
-              <>
-                <Link
-                  to="/settings"
-                  className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim transition hover:border-gray-600 hover:text-medium"
-                >
-                  <Palette size={13} /> <span className="hidden sm:inline">Внешний вид</span>
-                </Link>
-                <Link
-                  to="/admin"
-                  className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim transition hover:border-gray-600 hover:text-medium"
-                >
-                  <Settings size={13} /> <span className="hidden sm:inline">Управление</span>
-                </Link>
-              </>
+              <Link
+                to="/admin"
+                className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-dim transition hover:border-gray-600 hover:text-medium"
+              >
+                <Settings size={13} /> <span className="hidden sm:inline">Управление</span>
+              </Link>
             )}
           </div>
         </header>
@@ -262,7 +253,6 @@ function AppRoutes() {
       <Route path="/rss" element={<RSSPage />} />
       <Route path="/knowledge" element={<KnowledgePage />} />
       <Route path="/admin" element={<AdminPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
     </Routes>
   )
 }

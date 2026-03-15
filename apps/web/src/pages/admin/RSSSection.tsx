@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Pencil, Eye, EyeOff } from 'lucide-react'
 import { api } from '../../lib/api'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import type { RSSFeed } from '../../lib/types'
 
 export function RSSSection() {
@@ -15,6 +16,7 @@ export function RSSSection() {
   const [editUrl, setEditUrl] = useState('')
   const [saving, setSaving] = useState(false)
   const [editError, setEditError] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 
   useEffect(() => {
     api.rss.feeds.list().then(setFeeds).catch(() => {})
@@ -187,11 +189,21 @@ export function RSSSection() {
                   <Pencil size={14} />
                 </button>
                 <button
-                  onClick={() => handleDelete(feed.id)}
+                  onClick={() => setConfirmDeleteId(feed.id)}
                   className="flex size-8 items-center justify-center rounded-lg text-subtle cursor-pointer transition hover:bg-gray-800 hover:text-red-400"
                 >
                   <Trash2 size={14} />
                 </button>
+                {confirmDeleteId === feed.id && (
+                  <ConfirmDialog
+                    title={`Удалить «${feed.title}»?`}
+                    message="RSS-лента и все её элементы будут удалены без возможности восстановления."
+                    confirmLabel="Удалить"
+                    destructive
+                    onConfirm={() => { handleDelete(feed.id); setConfirmDeleteId(null) }}
+                    onCancel={() => setConfirmDeleteId(null)}
+                  />
+                )}
               </div>
             </div>
           )}

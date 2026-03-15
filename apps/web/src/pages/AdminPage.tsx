@@ -2,6 +2,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useUserStore } from '../store/userStore'
 import { useThemeStore } from '../store/themeStore'
+import { AppearanceSection } from './admin/AppearanceSection'
 import { WidgetsSection } from './admin/WidgetsSection'
 import { ServicesSection } from './admin/ServicesSection'
 import { RSSSection } from './admin/RSSSection'
@@ -35,6 +36,7 @@ export default function AdminPage() {
         </header>
 
         <div className="flex flex-col gap-10">
+          <AppearanceSection />
           <WidgetsSection />
           <KnowledgeSection />
           <ServicesSection />

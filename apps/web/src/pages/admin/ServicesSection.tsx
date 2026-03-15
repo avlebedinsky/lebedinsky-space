@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, Eye, EyeOff } from 'lucide-react'
 import { useServicesStore } from '../../store/servicesStore'
 import { getIcon } from '../../lib/icons'
 import { ServiceForm } from './ServiceForm'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { EMPTY_SERVICE, type ServiceFormData } from './serviceFormTypes'
 
 export function ServicesSection() {
@@ -10,6 +11,7 @@ export function ServicesSection() {
   const [creating, setCreating] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 
   const handleCreate = async (data: ServiceFormData) => {
     await create(data)
@@ -27,6 +29,8 @@ export function ServicesSection() {
       await remove(id)
     } catch (err) {
       setDeleteError(err instanceof Error ? err.message : 'Ошибка удаления')
+    } finally {
+      setConfirmDeleteId(null)
     }
   }
 
@@ -93,10 +97,20 @@ export function ServicesSection() {
                     className="flex size-8 items-center justify-center rounded-lg text-subtle cursor-pointer transition hover:bg-gray-800 hover:text-medium">
                     <Pencil size={14} />
                   </button>
-                  <button onClick={() => handleRemove(service.id)}
+                  <button onClick={() => setConfirmDeleteId(service.id)}
                     className="flex size-8 items-center justify-center rounded-lg text-subtle cursor-pointer transition hover:bg-gray-800 hover:text-red-400">
                     <Trash2 size={14} />
                   </button>
+                  {confirmDeleteId === service.id && (
+                    <ConfirmDialog
+                      title={`Удалить «${service.name}»?`}
+                      message="Сервис будет удалён без возможности восстановления."
+                      confirmLabel="Удалить"
+                      destructive
+                      onConfirm={() => handleRemove(service.id)}
+                      onCancel={() => setConfirmDeleteId(null)}
+                    />
+                  )}
                 </div>
               </div>
             )}
