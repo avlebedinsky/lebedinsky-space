@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/avlebedinsky/lebedinsky-space/api/internal/middleware"
 	"github.com/avlebedinsky/lebedinsky-space/api/internal/models"
 )
 
@@ -18,13 +20,32 @@ func NewSettingsHandler(db *pgxpool.Pool) *SettingsHandler {
 }
 
 func (h *SettingsHandler) Get(w http.ResponseWriter, r *http.Request) {
-	var gridOrderRaw, hiddenWidgetsRaw, widgetSpansRaw, kbAllowedFoldersRaw string
+	user := middleware.GetUser(r)
 	var s models.SiteSettings
+	var gridOrderRaw, hiddenWidgetsRaw, widgetSpansRaw, kbAllowedFoldersRaw string
+
 	err := h.db.QueryRow(r.Context(),
-		`SELECT bg_color, bg_image, card_color, accent_color, border_color, text_color, grid_order, hidden_widgets, widget_spans, kb_repo_url, kb_allowed_folders
-		 FROM site_settings WHERE id=1`,
-	).Scan(&s.BgColor, &s.BgImage, &s.CardColor, &s.AccentColor, &s.BorderColor, &s.TextColor, &gridOrderRaw, &hiddenWidgetsRaw, &widgetSpansRaw, &s.KBRepoURL, &kbAllowedFoldersRaw)
-	if err != nil {
+		`SELECT bg_color, bg_image, card_color, accent_color, border_color, text_color,
+		        grid_order, hidden_widgets, widget_spans,
+		        kb_repo_url, kb_allowed_folders
+		 FROM user_settings WHERE username = $1`,
+		user.Username,
+	).Scan(&s.BgColor, &s.BgImage, &s.CardColor, &s.AccentColor, &s.BorderColor, &s.TextColor,
+		&gridOrderRaw, &hiddenWidgetsRaw, &widgetSpansRaw,
+		&s.KBRepoURL, &kbAllowedFoldersRaw)
+
+	if err == pgx.ErrNoRows {
+		s.BgColor = "#030712"
+		s.BgImage = ""
+		s.CardColor = "#111827"
+		s.AccentColor = "#818cf8"
+		s.BorderColor = "#1f2937"
+		s.TextColor = "#ffffff"
+		gridOrderRaw = `["clock","weather","metrics"]`
+		hiddenWidgetsRaw = `[]`
+		widgetSpansRaw = `{}`
+		kbAllowedFoldersRaw = `[]`
+	} else if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
@@ -48,6 +69,8 @@ func (h *SettingsHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *SettingsHandler) Update(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUser(r)
+
 	var input models.SiteSettings
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, "Bad request", http.StatusBadRequest)
@@ -91,15 +114,27 @@ func (h *SettingsHandler) Update(w http.ResponseWriter, r *http.Request) {
 	var gridOrderRaw, hiddenWidgetsRaw, widgetSpansRaw, kbAllowedFoldersRaw string
 	var s models.SiteSettings
 	err = h.db.QueryRow(r.Context(),
-		`UPDATE site_settings
-		 SET bg_color=$1, bg_image=$2, card_color=$3, accent_color=$4, border_color=$5, text_color=$6,
-		     grid_order=$7, hidden_widgets=$8, widget_spans=$9, kb_repo_url=$10,
-		     kb_github_token = CASE WHEN $11 = '' THEN kb_github_token ELSE $11 END,
-		     kb_allowed_folders=$12
-		 WHERE id=1
-		 RETURNING bg_color, bg_image, card_color, accent_color, border_color, text_color, grid_order, hidden_widgets, widget_spans, kb_repo_url, kb_allowed_folders`,
-		input.BgColor, input.BgImage, input.CardColor, input.AccentColor, input.BorderColor, input.TextColor, string(gridOrderJSON), string(hiddenWidgetsJSON), string(widgetSpansJSON), input.KBRepoURL, input.KBGithubToken, string(kbAllowedFoldersJSON),
-	).Scan(&s.BgColor, &s.BgImage, &s.CardColor, &s.AccentColor, &s.BorderColor, &s.TextColor, &gridOrderRaw, &hiddenWidgetsRaw, &widgetSpansRaw, &s.KBRepoURL, &kbAllowedFoldersRaw)
+		`INSERT INTO user_settings
+		   (username, bg_color, bg_image, card_color, accent_color, border_color, text_color,
+		    grid_order, hidden_widgets, widget_spans,
+		    kb_repo_url, kb_github_token, kb_allowed_folders)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+		 ON CONFLICT (username) DO UPDATE SET
+		   bg_color=$2, bg_image=$3, card_color=$4, accent_color=$5, border_color=$6, text_color=$7,
+		   grid_order=$8, hidden_widgets=$9, widget_spans=$10,
+		   kb_repo_url=$11,
+		   kb_github_token = CASE WHEN $12 = '' THEN user_settings.kb_github_token ELSE $12 END,
+		   kb_allowed_folders=$13
+		 RETURNING bg_color, bg_image, card_color, accent_color, border_color, text_color,
+		           grid_order, hidden_widgets, widget_spans,
+		           kb_repo_url, kb_allowed_folders`,
+		user.Username,
+		input.BgColor, input.BgImage, input.CardColor, input.AccentColor, input.BorderColor, input.TextColor,
+		string(gridOrderJSON), string(hiddenWidgetsJSON), string(widgetSpansJSON),
+		input.KBRepoURL, input.KBGithubToken, string(kbAllowedFoldersJSON),
+	).Scan(&s.BgColor, &s.BgImage, &s.CardColor, &s.AccentColor, &s.BorderColor, &s.TextColor,
+		&gridOrderRaw, &hiddenWidgetsRaw, &widgetSpansRaw,
+		&s.KBRepoURL, &kbAllowedFoldersRaw)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return

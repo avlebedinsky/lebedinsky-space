@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Pencil, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react'
+import { Pencil, Eye, EyeOff, Loader2, ArrowLeft, Trash2 } from 'lucide-react'
 import { useThemeStore } from '../../store/themeStore'
 import { api } from '../../lib/api'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import type { KBNode } from '../../lib/types'
 
 export function KnowledgeSection() {
@@ -19,6 +20,9 @@ export function KnowledgeSection() {
   const [topFolders, setTopFolders] = useState<KBNode[]>([])
   const [foldersLoading, setFoldersLoading] = useState(false)
   const [allowedFolders, setAllowedFolders] = useState<string[]>([])
+
+  const [clearConfirm, setClearConfirm] = useState(false)
+  const [clearing, setClearing] = useState(false)
 
   const handleStartEdit = () => {
     setRepoURL(settings.kbRepoURL ?? '')
@@ -64,6 +68,7 @@ export function KnowledgeSection() {
         kbGithubToken: token || (settings.kbGithubToken ?? ''),
         kbAllowedFolders: settings.kbAllowedFolders ?? [],
       })
+      setTopFolders([])
       setFoldersLoading(true)
       setPhase('folders')
       const nodes = await api.knowledge.tree().catch(() => [])
@@ -93,15 +98,44 @@ export function KnowledgeSection() {
     }
   }
 
+  const handleClear = async () => {
+    setClearing(true)
+    setClearConfirm(false)
+    try {
+      await updateSettings({
+        ...settings,
+        kbRepoURL: '',
+        kbGithubToken: '',
+        kbAllowedFolders: [],
+      })
+      setTopFolders([])
+      setAllowedFolders([])
+      setEditing(false)
+    } finally {
+      setClearing(false)
+    }
+  }
+
   return (
     <section>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-subtle">База знаний</h2>
       </div>
 
+      {clearConfirm && (
+        <ConfirmDialog
+          title="Очистить базу знаний?"
+          message="URL репозитория, токен и список папок будут удалены. Это действие необратимо."
+          confirmLabel="Очистить"
+          destructive
+          onConfirm={() => { setClearConfirm(false); handleClear() }}
+          onCancel={() => setClearConfirm(false)}
+        />
+      )}
+
       <div className="rounded-2xl border border-gray-800 bg-gray-900">
         {!editing ? (
-          <div className="flex items-center gap-4 px-4 min-h-[56px]">
+          <div className="flex items-center gap-2 px-4 min-h-[56px]">
             <div className="flex-1 min-w-0">
               {settings.kbRepoURL ? (
                 <div className="flex flex-col gap-0.5">
@@ -123,6 +157,16 @@ export function KnowledgeSection() {
             >
               <Pencil size={14} />
             </button>
+            {settings.kbRepoURL && (
+              <button
+                onClick={() => setClearConfirm(true)}
+                disabled={clearing}
+                title="Очистить базу знаний"
+                className="flex size-8 items-center justify-center rounded-lg text-subtle cursor-pointer transition hover:bg-gray-800 hover:text-red-400 disabled:opacity-50"
+              >
+                {clearing ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+              </button>
+            )}
           </div>
         ) : phase === 'connection' ? (
           <form onSubmit={handleConnect} className="flex flex-col gap-4 p-4">
@@ -210,7 +254,7 @@ export function KnowledgeSection() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setPhase('connection')}
+                onClick={() => { setPhase('connection'); setTopFolders([]) }}
                 className="flex items-center gap-1.5 text-xs text-subtle cursor-pointer transition hover:text-soft"
               >
                 <ArrowLeft size={12} /> Изменить подключение
@@ -280,4 +324,3 @@ export function KnowledgeSection() {
     </section>
   )
 }
-

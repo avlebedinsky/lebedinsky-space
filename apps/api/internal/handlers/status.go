@@ -9,6 +9,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/avlebedinsky/lebedinsky-space/api/internal/middleware"
 	"github.com/avlebedinsky/lebedinsky-space/api/internal/models"
 )
 
@@ -33,7 +34,8 @@ func NewStatusHandler(db *pgxpool.Pool) *StatusHandler {
 }
 
 func (h *StatusHandler) List(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.db.Query(r.Context(), `SELECT id, url FROM services`)
+	user := middleware.GetUser(r)
+	rows, err := h.db.Query(r.Context(), `SELECT id, url FROM services WHERE username = $1`, user.Username)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return

@@ -14,11 +14,13 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/avlebedinsky/lebedinsky-space/api/internal/middleware"
 	"github.com/avlebedinsky/lebedinsky-space/api/internal/models"
 )
 
 type knowledgeTreeCache struct {
 	nodes     []models.KBNode
+	repoURL   string
 	fetchedAt time.Time
 }
 
@@ -30,7 +32,7 @@ type knowledgeFileCache struct {
 type KnowledgeHandler struct {
 	db        *pgxpool.Pool
 	mu        sync.Mutex
-	treeCache *knowledgeTreeCache
+	treeCache map[string]*knowledgeTreeCache
 	fileCache map[string]*knowledgeFileCache
 	ttl       time.Duration
 }
@@ -38,15 +40,21 @@ type KnowledgeHandler struct {
 func NewKnowledgeHandler(db *pgxpool.Pool) *KnowledgeHandler {
 	return &KnowledgeHandler{
 		db:        db,
+		treeCache: make(map[string]*knowledgeTreeCache),
 		fileCache: make(map[string]*knowledgeFileCache),
 		ttl:       5 * time.Minute,
 	}
 }
 
 func (h *KnowledgeHandler) loadConfig(r *http.Request) (repoURL, token string, err error) {
+	user := middleware.GetUser(r)
 	err = h.db.QueryRow(r.Context(),
-		`SELECT kb_repo_url, kb_github_token FROM site_settings WHERE id=1`,
+		`SELECT kb_repo_url, kb_github_token FROM user_settings WHERE username = $1`,
+		user.Username,
 	).Scan(&repoURL, &token)
+	if err != nil {
+		err = nil
+	}
 	return
 }
 
@@ -172,6 +180,7 @@ func buildTree(paths []string) []models.KBNode {
 }
 
 func (h *KnowledgeHandler) GetTree(w http.ResponseWriter, r *http.Request) {
+	username := middleware.GetUser(r).Username
 	repoURL, token, err := h.loadConfig(r)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -184,8 +193,8 @@ func (h *KnowledgeHandler) GetTree(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.mu.Lock()
-	if h.treeCache != nil && time.Since(h.treeCache.fetchedAt) < h.ttl {
-		cached := h.treeCache.nodes
+	if c := h.treeCache[username]; c != nil && c.repoURL == repoURL && time.Since(c.fetchedAt) < h.ttl {
+		cached := c.nodes
 		h.mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(cached)
@@ -227,7 +236,7 @@ func (h *KnowledgeHandler) GetTree(w http.ResponseWriter, r *http.Request) {
 	nodes := buildTree(mdPaths)
 
 	h.mu.Lock()
-	h.treeCache = &knowledgeTreeCache{nodes: nodes, fetchedAt: time.Now()}
+	h.treeCache[username] = &knowledgeTreeCache{nodes: nodes, repoURL: repoURL, fetchedAt: time.Now()}
 	h.mu.Unlock()
 
 	w.Header().Set("Content-Type", "application/json")
@@ -246,6 +255,7 @@ func (h *KnowledgeHandler) GetFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	username := middleware.GetUser(r).Username
 	repoURL, token, err := h.loadConfig(r)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -256,8 +266,9 @@ func (h *KnowledgeHandler) GetFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cacheKey := username + ":" + repoURL + ":" + path
 	h.mu.Lock()
-	if cached, ok := h.fileCache[path]; ok && time.Since(cached.fetchedAt) < h.ttl {
+	if cached, ok := h.fileCache[cacheKey]; ok && time.Since(cached.fetchedAt) < h.ttl {
 		content := cached.content
 		h.mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
@@ -303,7 +314,7 @@ func (h *KnowledgeHandler) GetFile(w http.ResponseWriter, r *http.Request) {
 	content := string(decoded)
 
 	h.mu.Lock()
-	h.fileCache[path] = &knowledgeFileCache{content: content, fetchedAt: time.Now()}
+	h.fileCache[cacheKey] = &knowledgeFileCache{content: content, fetchedAt: time.Now()}
 	h.mu.Unlock()
 
 	w.Header().Set("Content-Type", "application/json")

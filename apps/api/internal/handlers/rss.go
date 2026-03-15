@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mmcdole/gofeed"
 
+	"github.com/avlebedinsky/lebedinsky-space/api/internal/middleware"
 	"github.com/avlebedinsky/lebedinsky-space/api/internal/models"
 )
 
@@ -22,19 +23,24 @@ type rssCache struct {
 type RSSHandler struct {
 	db    *pgxpool.Pool
 	mu    sync.Mutex
-	cache *rssCache
+	cache map[string]*rssCache
 	ttl   time.Duration
 }
 
 func NewRSSHandler(db *pgxpool.Pool) *RSSHandler {
 	return &RSSHandler{
-		db:  db,
-		ttl: 5 * time.Minute,
+		db:    db,
+		cache: make(map[string]*rssCache),
+		ttl:   5 * time.Minute,
 	}
 }
 
 func (h *RSSHandler) ListFeeds(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.db.Query(r.Context(), `SELECT id, title, url, hidden, item_limit, created_at FROM rss_feeds ORDER BY created_at ASC`)
+	user := middleware.GetUser(r)
+	rows, err := h.db.Query(r.Context(),
+		`SELECT id, title, url, hidden, item_limit, created_at FROM rss_feeds WHERE username = $1 ORDER BY created_at ASC`,
+		user.Username,
+	)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -55,6 +61,7 @@ func (h *RSSHandler) ListFeeds(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RSSHandler) CreateFeed(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUser(r)
 	var body struct {
 		Title     string `json:"title"`
 		URL       string `json:"url"`
@@ -70,8 +77,8 @@ func (h *RSSHandler) CreateFeed(w http.ResponseWriter, r *http.Request) {
 
 	var f models.RSSFeed
 	err := h.db.QueryRow(r.Context(),
-		`INSERT INTO rss_feeds (title, url, item_limit) VALUES ($1, $2, $3) RETURNING id, title, url, hidden, item_limit, created_at`,
-		body.Title, body.URL, body.ItemLimit,
+		`INSERT INTO rss_feeds (title, url, item_limit, username) VALUES ($1, $2, $3, $4) RETURNING id, title, url, hidden, item_limit, created_at`,
+		body.Title, body.URL, body.ItemLimit, user.Username,
 	).Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.ItemLimit, &f.CreatedAt)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -79,7 +86,7 @@ func (h *RSSHandler) CreateFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.mu.Lock()
-	h.cache = nil
+	delete(h.cache, user.Username)
 	h.mu.Unlock()
 
 	w.Header().Set("Content-Type", "application/json")
@@ -88,6 +95,7 @@ func (h *RSSHandler) CreateFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RSSHandler) UpdateFeed(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUser(r)
 	id := chi.URLParam(r, "id")
 	var body struct {
 		Title     string `json:"title"`
@@ -105,8 +113,8 @@ func (h *RSSHandler) UpdateFeed(w http.ResponseWriter, r *http.Request) {
 
 	var f models.RSSFeed
 	err := h.db.QueryRow(r.Context(),
-		`UPDATE rss_feeds SET title = $1, url = $2, hidden = $3, item_limit = $4 WHERE id = $5 RETURNING id, title, url, hidden, item_limit, created_at`,
-		body.Title, body.URL, body.Hidden, body.ItemLimit, id,
+		`UPDATE rss_feeds SET title = $1, url = $2, hidden = $3, item_limit = $4 WHERE id = $5 AND username = $6 RETURNING id, title, url, hidden, item_limit, created_at`,
+		body.Title, body.URL, body.Hidden, body.ItemLimit, id, user.Username,
 	).Scan(&f.ID, &f.Title, &f.URL, &f.Hidden, &f.ItemLimit, &f.CreatedAt)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -114,7 +122,7 @@ func (h *RSSHandler) UpdateFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.mu.Lock()
-	h.cache = nil
+	delete(h.cache, user.Username)
 	h.mu.Unlock()
 
 	w.Header().Set("Content-Type", "application/json")
@@ -122,24 +130,28 @@ func (h *RSSHandler) UpdateFeed(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RSSHandler) DeleteFeed(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUser(r)
 	id := chi.URLParam(r, "id")
-	_, err := h.db.Exec(r.Context(), `DELETE FROM rss_feeds WHERE id = $1`, id)
+	_, err := h.db.Exec(r.Context(), `DELETE FROM rss_feeds WHERE id = $1 AND username = $2`, id, user.Username)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
 
 	h.mu.Lock()
-	h.cache = nil
+	delete(h.cache, user.Username)
 	h.mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *RSSHandler) FetchItems(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUser(r)
+	username := user.Username
+
 	h.mu.Lock()
-	if h.cache != nil && time.Since(h.cache.fetchedAt) < h.ttl {
-		cached := h.cache.items
+	if c := h.cache[username]; c != nil && time.Since(c.fetchedAt) < h.ttl {
+		cached := c.items
 		h.mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(cached)
@@ -147,7 +159,10 @@ func (h *RSSHandler) FetchItems(w http.ResponseWriter, r *http.Request) {
 	}
 	h.mu.Unlock()
 
-	rows, err := h.db.Query(r.Context(), `SELECT id, title, url, hidden, item_limit, created_at FROM rss_feeds WHERE hidden = FALSE ORDER BY created_at ASC`)
+	rows, err := h.db.Query(r.Context(),
+		`SELECT id, title, url, hidden, item_limit, created_at FROM rss_feeds WHERE username = $1 AND hidden = FALSE ORDER BY created_at ASC`,
+		username,
+	)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -183,7 +198,7 @@ func (h *RSSHandler) FetchItems(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.mu.Lock()
-	h.cache = &rssCache{items: grouped, fetchedAt: time.Now()}
+	h.cache[username] = &rssCache{items: grouped, fetchedAt: time.Now()}
 	h.mu.Unlock()
 
 	w.Header().Set("Content-Type", "application/json")

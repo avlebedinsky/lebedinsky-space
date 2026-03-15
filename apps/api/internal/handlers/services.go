@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/avlebedinsky/lebedinsky-space/api/internal/middleware"
 	"github.com/avlebedinsky/lebedinsky-space/api/internal/models"
 )
 
@@ -20,9 +21,11 @@ func NewServicesHandler(db *pgxpool.Pool) *ServicesHandler {
 }
 
 func (h *ServicesHandler) List(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUser(r)
 	rows, err := h.db.Query(r.Context(),
 		`SELECT id, name, description, url, icon_name, color, sort_order, hidden, card_col_span, card_row_span, created_at
-		 FROM services ORDER BY sort_order, id`)
+		 FROM services WHERE username = $1 ORDER BY sort_order, id`,
+		user.Username)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -44,6 +47,7 @@ func (h *ServicesHandler) List(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ServicesHandler) Create(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUser(r)
 	var input struct {
 		Name        string `json:"name"`
 		Description string `json:"description"`
@@ -72,10 +76,10 @@ func (h *ServicesHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	var s models.Service
 	err := h.db.QueryRow(r.Context(),
-		`INSERT INTO services (name, description, url, icon_name, color, sort_order, hidden, card_col_span, card_row_span)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		`INSERT INTO services (name, description, url, icon_name, color, sort_order, hidden, card_col_span, card_row_span, username)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		 RETURNING id, name, description, url, icon_name, color, sort_order, hidden, card_col_span, card_row_span, created_at`,
-		input.Name, input.Description, input.URL, input.IconName, input.Color, input.SortOrder, input.Hidden, input.CardColSpan, input.CardRowSpan,
+		input.Name, input.Description, input.URL, input.IconName, input.Color, input.SortOrder, input.Hidden, input.CardColSpan, input.CardRowSpan, user.Username,
 	).Scan(&s.ID, &s.Name, &s.Description, &s.URL, &s.IconName, &s.Color, &s.SortOrder, &s.Hidden, &s.CardColSpan, &s.CardRowSpan, &s.CreatedAt)
 	if err != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -88,6 +92,7 @@ func (h *ServicesHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ServicesHandler) Update(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUser(r)
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid id", http.StatusBadRequest)
@@ -119,9 +124,9 @@ func (h *ServicesHandler) Update(w http.ResponseWriter, r *http.Request) {
 	var s models.Service
 	err = h.db.QueryRow(r.Context(),
 		`UPDATE services SET name=$1, description=$2, url=$3, icon_name=$4, color=$5, sort_order=$6, hidden=$7, card_col_span=$8, card_row_span=$9
-		 WHERE id=$10
+		 WHERE id=$10 AND username=$11
 		 RETURNING id, name, description, url, icon_name, color, sort_order, hidden, card_col_span, card_row_span, created_at`,
-		input.Name, input.Description, input.URL, input.IconName, input.Color, input.SortOrder, input.Hidden, input.CardColSpan, input.CardRowSpan, id,
+		input.Name, input.Description, input.URL, input.IconName, input.Color, input.SortOrder, input.Hidden, input.CardColSpan, input.CardRowSpan, id, user.Username,
 	).Scan(&s.ID, &s.Name, &s.Description, &s.URL, &s.IconName, &s.Color, &s.SortOrder, &s.Hidden, &s.CardColSpan, &s.CardRowSpan, &s.CreatedAt)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusNotFound)
@@ -139,7 +144,8 @@ func (h *ServicesHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.db.Exec(r.Context(), `DELETE FROM services WHERE id=$1`, id)
+	user := middleware.GetUser(r)
+	result, err := h.db.Exec(r.Context(), `DELETE FROM services WHERE id=$1 AND username=$2`, id, user.Username)
 	if err != nil || result.RowsAffected() == 0 {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return

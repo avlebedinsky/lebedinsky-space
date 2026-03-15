@@ -1,0 +1,3 @@
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS kb_repo_url TEXT NOT NULL DEFAULT '';
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS kb_github_token TEXT NOT NULL DEFAULT '';
+ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS kb_allowed_folders TEXT NOT NULL DEFAULT '[]';
