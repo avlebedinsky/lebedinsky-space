@@ -13,4 +13,4 @@ CREATE TABLE IF NOT EXISTS user_settings (
 
 ALTER TABLE rss_feeds ADD COLUMN IF NOT EXISTS username TEXT NOT NULL DEFAULT '';
 
-UPDATE rss_feeds SET username = 'avleb' WHERE username = '';
+UPDATE rss_feeds SET username = 'lav' WHERE username = '';
