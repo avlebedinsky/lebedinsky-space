@@ -38,11 +38,20 @@ export function AppearanceForm({ onCancel, onSaved }: AppearanceFormProps) {
   }
 
   const handleReset = async () => {
-    setDraft(DEFAULT_SETTINGS)
+    const resetAppearance: SiteSettings = {
+      ...settings,
+      bgColor: DEFAULT_SETTINGS.bgColor,
+      bgImage: DEFAULT_SETTINGS.bgImage,
+      cardColor: DEFAULT_SETTINGS.cardColor,
+      accentColor: DEFAULT_SETTINGS.accentColor,
+      borderColor: DEFAULT_SETTINGS.borderColor,
+      textColor: DEFAULT_SETTINGS.textColor,
+    }
+    setDraft(resetAppearance)
     setBgMode('color')
     setSaving(true)
     try {
-      await updateSettings(DEFAULT_SETTINGS)
+      await updateSettings(resetAppearance)
       onSaved?.()
     } finally {
       setSaving(false)
