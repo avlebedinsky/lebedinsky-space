@@ -1,87 +1,128 @@
 # lebedinsky.space
 
-Личная стартовая страница с дашбордом сервисов и управлением через веб.
+Персональная стартовая страница с виджетами, карточками сервисов, RSS и базой знаний.
 
 ## Стек
 
-| Слой | Технология |
-|------|-----------|
-| Фронтенд | React 19 + TypeScript + Tailwind CSS v4 + Vite |
-| Бэкенд | Go (chi router) + PostgreSQL (pgx) |
-| Аутентификация | Authelia (forward auth via Traefik) |
-| Деплой | Docker Compose + Traefik |
+| Слой | Технологии |
+|------|------------|
+| Frontend | React 19, React Router 7, TypeScript 5 (strict), Tailwind CSS v4, Vite 7 |
+| Backend | Go 1.26, chi v5, pgx v5 (raw SQL) |
+| DB | PostgreSQL 17 |
+| Auth | Traefik + Authelia (prod), `X-Dev-User` (dev fallback) |
+| Deploy | Docker Compose + Traefik |
 
-## Структура
+## Что умеет
 
-```
-lebedinsky-space/
-├── apps/
-│   ├── web/          # React SPA
-│   │   ├── src/
-│   │   │   ├── lib/          # api client, типы, иконки
-│   │   │   ├── hooks/        # useMe, useServices, useStatus
-│   │   │   ├── components/   # ServiceCard, StatusDot
-│   │   │   └── pages/        # AdminPage
-│   │   ├── Dockerfile
-│   │   └── nginx.conf
-│   └── api/          # Go API
-│       ├── internal/
-│       │   ├── handlers/     # services, status, me
-│       │   ├── middleware/   # auth (Remote-User header)
-│       │   ├── models/
-│       │   ├── db/           # migrations
-│       │   └── config/
-│       ├── cmd/seed/         # утилита засева БД
-│       └── Dockerfile
-├── docker-compose.yml
-└── .env.example
+- Единый grid с drag and drop для карточек сервисов и виджетов.
+- Виджеты: часы, погода, метрики, сеть, Docker, настроение, pixel pet.
+- RSS-ленты с настройкой видимости и лимита элементов на ленту.
+- База знаний из GitHub-репозитория с markdown-рендерингом.
+- Персональные настройки на пользователя: тема, порядок grid, скрытые элементы, размеры карточек/виджетов, настройки базы знаний.
+
+## Структура репозитория
+
+```text
+apps/web/        React SPA
+apps/api/        Go API
+apps/api/cmd/seed/  утилита начального заполнения БД
+deploy/          production docker-compose (GHCR images)
+docker-compose.yml  локальный compose
 ```
 
 ## API
 
 | Метод | Путь | Доступ | Описание |
-|-------|------|--------|----------|
+|------|------|--------|----------|
 | GET | `/me` | все | текущий пользователь |
-| GET | `/services` | все | список сервисов |
+| GET | `/services` | все | список сервисов пользователя |
 | POST | `/services` | admin | создать сервис |
 | PUT | `/services/{id}` | admin | обновить сервис |
 | DELETE | `/services/{id}` | admin | удалить сервис |
-| GET | `/status` | все | статусы сервисов (HEAD-запросы, кэш 30 сек) |
+| GET | `/status` | все | статусы сервисов (кэш 30с) |
+| GET | `/metrics` | все | CPU/RAM/disk/uptime/network/hostname |
+| GET | `/docker` | все | список контейнеров Docker |
+| GET | `/settings` | все | настройки интерфейса и базы знаний пользователя |
+| PUT | `/settings` | admin | обновить настройки пользователя |
+| GET | `/rss/feeds` | все | список RSS-лент пользователя |
+| POST | `/rss/feeds` | admin | добавить RSS-ленту |
+| PUT | `/rss/feeds/{id}` | admin | обновить RSS-ленту |
+| DELETE | `/rss/feeds/{id}` | admin | удалить RSS-ленту |
+| GET | `/rss/items` | все | получить элементы всех видимых лент (кэш) |
+| GET | `/knowledge/tree` | все | дерево markdown-файлов из GitHub-репозитория |
+| GET | `/knowledge/file?path=...` | все | содержимое markdown-файла |
+| GET | `/mood` | все | список mood-записей пользователя |
+| POST | `/mood` | все | создать mood-запись |
+| DELETE | `/mood/{id}` | все | удалить mood-запись |
 
 ## Локальная разработка
 
-**Бэкенд:**
-```bash
-# Запустить Postgres
-docker run -d --name pg -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=lebedinsky -p 5432:5432 postgres:17-alpine
+### 1. Зависимости
 
-# Запустить API
+```bash
+npm install
+```
+
+### 2. Запуск frontend
+
+```bash
+cd apps/web
+npm run dev
+```
+
+Frontend доступен на `http://localhost:5173`, запросы `/api` проксируются на API.
+
+### 3. Запуск backend
+
+```bash
 cd apps/api
 DATABASE_URL="postgres://postgres:secret@localhost:5432/lebedinsky" \
   PORT=8080 ENVIRONMENT=development ADMIN_GROUP=admins \
   go run .
 ```
 
-**Фронтенд:**
+### 4. Postgres для dev
+
 ```bash
-cd apps/web
-npm install
-npm run dev   # http://localhost:5173
-              # /api проксируется на :8080
+docker run -d --name pg \
+  -e POSTGRES_PASSWORD=secret \
+  -e POSTGRES_DB=lebedinsky \
+  -p 5432:5432 postgres:17-alpine
 ```
 
-Dev-аутентификация: API принимает заголовок `X-Dev-User: username` вместо `Remote-User`.
+Или через compose-сервис `db`.
+
+## Полезные команды
+
+```bash
+# Из корня
+npm run dev:web
+npm run build:web
+npm run lint:web
+
+# Backend tests (используют testcontainers)
+cd apps/api && go test ./...
+
+# TypeScript check
+cd apps/web && npx tsc --noEmit
+
+# Seed
+cd apps/api && go run ./cmd/seed
+```
+
+## Аутентификация
+
+- Production: ожидаются заголовки `Remote-User` и `Remote-Groups` от Traefik/Authelia.
+- Development: API принимает `X-Dev-User` как fallback.
+- Vite proxy в dev добавляет `X-Dev-User: avleb` и `Remote-Groups: admin`.
 
 ## Деплой
 
-Предполагает Traefik с Authelia как middleware `authelia@docker` и внешнюю сеть `traefik`.
+Требуется внешняя сеть `traefik` и middleware `authelia@docker`.
 
 ```bash
 cp .env.example .env
-# Заполнить DATABASE_URL, POSTGRES_PASSWORD, ADMIN_GROUP
 docker compose up -d --build
 ```
 
-Traefik автоматически получает SSL-сертификат и проксирует:
-- `lebedinsky.space` → контейнер `web` (nginx + React SPA)
-- `lebedinsky.space/api/*` → контейнер `api` (Go, `/api` prefix стрипается)
+Заполни в `.env`: `DATABASE_URL`, `POSTGRES_PASSWORD`, `ADMIN_GROUP`.
